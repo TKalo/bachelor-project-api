@@ -3,7 +3,7 @@ syntax = "proto3";
 package hero;
 
 service HeroService {
-    rpc FindOne (HeroById) returns (Hero);
+    rpc FindOne (HeroById) returns (Hero){}
 }
 
 message HeroById {

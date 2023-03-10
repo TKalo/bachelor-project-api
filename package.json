@@ -32,7 +32,8 @@
     "nestjs-proto-gen-ts": "^1.0.21",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
-    "ts-protoc-gen": "^0.15.0"
+    "ts-protoc-gen": "^0.15.0",
+    "ts-proto": "^1.141.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

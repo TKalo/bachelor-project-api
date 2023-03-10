@@ -1,32 +1,34 @@
 import { Metadata, ServerUnaryCall } from '@grpc/grpc-js';
 import { Controller, Logger } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
-import { Hero, HeroById } from 'generated_proto/hero_pb';
+import { Hero, HeroById, HeroServiceController, HeroServiceControllerMethods } from 'generated_proto/hero';
+import { Observable } from 'rxjs';
 
 @Controller()
-export class AppController {
-  @GrpcMethod('HeroService', 'FindOne')
-  FindOne(data: HeroById.AsObject, metadata: Metadata, call: ServerUnaryCall<any,any>): Hero.AsObject {
+@HeroServiceControllerMethods()
+export class AppController implements HeroServiceController {
+  findOne(request: HeroById): Hero | Promise<Hero> | Observable<Hero> {
     const items = [
       { id: 0, name: 'John'},
       { id: 1, name: 'Jahn'},
     ];
 
-    const hero = new Hero()
+    let hero : Hero;
 
 
     for(let x = 0; x < items.length ; x++){
-      Logger.debug("expected: " + data.id)
+      Logger.debug("expected: " + request.id)
       Logger.debug("actual: " + items[x].id)
 
 
-      if(items[x].id === data.id){
-        hero.setId(x)
-        hero.setName(items[x].name)
+      if(items[x].id === request.id){
+        hero = {
+          id: x,
+          name: items[x].name
+        }
         break
       }
     }
 
-    return hero.toObject()
+    return hero
   }
 }
