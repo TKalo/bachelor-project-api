@@ -6,7 +6,7 @@ import {
   HeroServiceControllerMethods,
   Ping,
 } from 'generated_proto/hero';
-import { delay, Observable, Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 @Controller()
 @HeroServiceControllerMethods()

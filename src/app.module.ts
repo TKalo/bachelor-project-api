@@ -1,24 +1,23 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { addReflectionToGrpcConfig, GrpcReflectionModule } from 'nestjs-grpc-reflection';
+import {
+  addReflectionToGrpcConfig,
+  GrpcReflectionModule,
+} from 'nestjs-grpc-reflection';
 import { GrpcOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
-
 
 export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
   transport: Transport.GRPC,
   options: {
-  url: '0.0.0.0:50051',
+    url: '0.0.0.0:50051',
     package: 'hero',
     protoPath: join(__dirname, '../../hero.proto'),
   },
 });
 
-
 @Module({
   controllers: [AppController],
-  providers: [AppService],
   imports: [GrpcReflectionModule.register(grpcClientOptions)],
 })
 export class AppModule {}
