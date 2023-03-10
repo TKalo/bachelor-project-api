@@ -6,14 +6,13 @@ import { Hero, HeroById } from 'generated_proto/hero_pb';
 @Controller()
 export class AppController {
   @GrpcMethod('HeroService', 'FindOne')
-  FindOne(data: HeroById.AsObject, metadata: Metadata, call: ServerUnaryCall<any,any>): Hero {
+  FindOne(data: HeroById.AsObject, metadata: Metadata, call: ServerUnaryCall<any,any>): Hero.AsObject {
     const items = [
       { id: 0, name: 'John'},
       { id: 1, name: 'Jahn'},
     ];
 
     const hero = new Hero()
-    let object;
 
 
     for(let x = 0; x < items.length ; x++){
@@ -22,18 +21,12 @@ export class AppController {
 
 
       if(items[x].id === data.id){
-        object = {
-          id: x, name: items[x].name
-        }
         hero.setId(x)
         hero.setName(items[x].name)
         break
       }
     }
 
-
-    Logger.debug("return: " + object)
-
-    return object
+    return hero.toObject()
   }
 }
