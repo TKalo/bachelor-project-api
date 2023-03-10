@@ -11,7 +11,7 @@ export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
   options: {
   url: '0.0.0.0:50051',
     package: 'hero',
-    protoPath: join(__dirname, '../hero.proto'),
+    protoPath: join(__dirname, '../../hero.proto'),
   },
 });
 
