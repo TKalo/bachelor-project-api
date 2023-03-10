@@ -18,6 +18,10 @@ class HeroServiceClient extends $grpc.Client {
       '/hero.HeroService/FindOne',
       ($0.HeroById value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.Hero.fromBuffer(value));
+  static final _$pingStream = $grpc.ClientMethod<$0.Ping, $0.Ping>(
+      '/hero.HeroService/PingStream',
+      ($0.Ping value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.Ping.fromBuffer(value));
 
   HeroServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -27,6 +31,11 @@ class HeroServiceClient extends $grpc.Client {
   $grpc.ResponseFuture<$0.Hero> findOne($0.HeroById request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$findOne, request, options: options);
+  }
+
+  $grpc.ResponseStream<$0.Ping> pingStream($async.Stream<$0.Ping> request,
+      {$grpc.CallOptions? options}) {
+    return $createStreamingCall(_$pingStream, request, options: options);
   }
 }
 
@@ -41,6 +50,13 @@ abstract class HeroServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.HeroById.fromBuffer(value),
         ($0.Hero value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.Ping, $0.Ping>(
+        'PingStream',
+        pingStream,
+        true,
+        true,
+        ($core.List<$core.int> value) => $0.Ping.fromBuffer(value),
+        ($0.Ping value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.Hero> findOne_Pre(
@@ -49,4 +65,6 @@ abstract class HeroServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.Hero> findOne($grpc.ServiceCall call, $0.HeroById request);
+  $async.Stream<$0.Ping> pingStream(
+      $grpc.ServiceCall call, $async.Stream<$0.Ping> request);
 }

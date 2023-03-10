@@ -4,6 +4,10 @@ import { Observable } from "rxjs";
 
 export const protobufPackage = "hero";
 
+export interface Ping {
+  id: number;
+}
+
 export interface HeroById {
   id: number;
 }
@@ -17,10 +21,14 @@ export const HERO_PACKAGE_NAME = "hero";
 
 export interface HeroServiceClient {
   findOne(request: HeroById): Observable<Hero>;
+
+  pingStream(request: Observable<Ping>): Observable<Ping>;
 }
 
 export interface HeroServiceController {
   findOne(request: HeroById): Promise<Hero> | Observable<Hero> | Hero;
+
+  pingStream(request: Observable<Ping>): Observable<Ping>;
 }
 
 export function HeroServiceControllerMethods() {
@@ -30,7 +38,7 @@ export function HeroServiceControllerMethods() {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("HeroService", method)(constructor.prototype[method], method, descriptor);
     }
-    const grpcStreamMethods: string[] = [];
+    const grpcStreamMethods: string[] = ["pingStream"];
     for (const method of grpcStreamMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcStreamMethod("HeroService", method)(constructor.prototype[method], method, descriptor);

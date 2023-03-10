@@ -8,6 +8,16 @@
 import 'dart:core' as $core;
 import 'dart:convert' as $convert;
 import 'dart:typed_data' as $typed_data;
+@$core.Deprecated('Use pingDescriptor instead')
+const Ping$json = const {
+  '1': 'Ping',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 5, '10': 'id'},
+  ],
+};
+
+/// Descriptor for `Ping`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List pingDescriptor = $convert.base64Decode('CgRQaW5nEg4KAmlkGAEgASgFUgJpZA==');
 @$core.Deprecated('Use heroByIdDescriptor instead')
 const HeroById$json = const {
   '1': 'HeroById',

@@ -29,5 +29,24 @@ void main() {
       expect(response.id, equals(1));
       expect(response.name, equals('Jahn'));
     });
+
+    test('PingStream', () async {
+      final request = Ping()..id = 1;
+
+      final responseStream = stub.pingStream(
+        Stream.periodic(Duration(seconds: 10), (i) => request),
+      );
+
+      await expectLater(
+        responseStream,
+        emitsInOrder([
+          Ping()..id = 1,
+          Ping()..id = 2,
+          Ping()..id = 3,
+          Ping()..id = 4,
+          Ping()..id = 5
+        ]),
+      );
+    });
   });
 }
