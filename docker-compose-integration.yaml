@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  api:
+    build: ./api
+    networks:
+      - default
+
+  client:
+    build: ./test_client
+    depends_on:
+      - api
+    networks:
+      - default
+
+networks:
+  default:

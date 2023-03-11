@@ -7,9 +7,10 @@ void main() {
     late ClientChannel channel;
     late HeroServiceClient stub;
 
-    setUp(() async {
+    setUpAll(() async {
+      await Future.delayed(Duration(seconds: 1));
       channel = ClientChannel(
-        '0.0.0.0',
+        'api',
         port: 50051,
         options: const ChannelOptions(
           credentials: ChannelCredentials.insecure(),
@@ -18,7 +19,7 @@ void main() {
       stub = HeroServiceClient(channel);
     });
 
-    tearDown(() async {
+    tearDownAll(() async {
       await channel.shutdown();
     });
 
@@ -34,7 +35,7 @@ void main() {
       final request = Ping()..id = 1;
 
       final responseStream = stub.pingStream(
-        Stream.periodic(Duration(seconds: 10), (i) => request),
+        Stream.periodic(Duration(seconds: 1), (i) => request),
       );
 
       await expectLater(
