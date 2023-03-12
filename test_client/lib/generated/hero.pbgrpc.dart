@@ -18,10 +18,18 @@ class HeroServiceClient extends $grpc.Client {
       '/hero.HeroService/FindOne',
       ($0.HeroById value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.Hero.fromBuffer(value));
-  static final _$pingStream = $grpc.ClientMethod<$0.Ping, $0.Ping>(
+  static final _$pingStream = $grpc.ClientMethod<$0.Void, $0.Ping>(
       '/hero.HeroService/PingStream',
-      ($0.Ping value) => value.writeToBuffer(),
+      ($0.Void value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.Ping.fromBuffer(value));
+  static final _$addMessage = $grpc.ClientMethod<$0.Message, $0.Void>(
+      '/hero.HeroService/AddMessage',
+      ($0.Message value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.Void.fromBuffer(value));
+  static final _$messageStream = $grpc.ClientMethod<$0.Void, $0.Message>(
+      '/hero.HeroService/MessageStream',
+      ($0.Void value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.Message.fromBuffer(value));
 
   HeroServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -33,9 +41,23 @@ class HeroServiceClient extends $grpc.Client {
     return $createUnaryCall(_$findOne, request, options: options);
   }
 
-  $grpc.ResponseStream<$0.Ping> pingStream($async.Stream<$0.Ping> request,
+  $grpc.ResponseStream<$0.Ping> pingStream($0.Void request,
       {$grpc.CallOptions? options}) {
-    return $createStreamingCall(_$pingStream, request, options: options);
+    return $createStreamingCall(
+        _$pingStream, $async.Stream.fromIterable([request]),
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.Void> addMessage($0.Message request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$addMessage, request, options: options);
+  }
+
+  $grpc.ResponseStream<$0.Message> messageStream($0.Void request,
+      {$grpc.CallOptions? options}) {
+    return $createStreamingCall(
+        _$messageStream, $async.Stream.fromIterable([request]),
+        options: options);
   }
 }
 
@@ -50,13 +72,27 @@ abstract class HeroServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.HeroById.fromBuffer(value),
         ($0.Hero value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.Ping, $0.Ping>(
+    $addMethod($grpc.ServiceMethod<$0.Void, $0.Ping>(
         'PingStream',
-        pingStream,
+        pingStream_Pre,
+        false,
         true,
-        true,
-        ($core.List<$core.int> value) => $0.Ping.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.Void.fromBuffer(value),
         ($0.Ping value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.Message, $0.Void>(
+        'AddMessage',
+        addMessage_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.Message.fromBuffer(value),
+        ($0.Void value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.Void, $0.Message>(
+        'MessageStream',
+        messageStream_Pre,
+        false,
+        true,
+        ($core.List<$core.int> value) => $0.Void.fromBuffer(value),
+        ($0.Message value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.Hero> findOne_Pre(
@@ -64,7 +100,24 @@ abstract class HeroServiceBase extends $grpc.Service {
     return findOne(call, await request);
   }
 
+  $async.Stream<$0.Ping> pingStream_Pre(
+      $grpc.ServiceCall call, $async.Future<$0.Void> request) async* {
+    yield* pingStream(call, await request);
+  }
+
+  $async.Future<$0.Void> addMessage_Pre(
+      $grpc.ServiceCall call, $async.Future<$0.Message> request) async {
+    return addMessage(call, await request);
+  }
+
+  $async.Stream<$0.Message> messageStream_Pre(
+      $grpc.ServiceCall call, $async.Future<$0.Void> request) async* {
+    yield* messageStream(call, await request);
+  }
+
   $async.Future<$0.Hero> findOne($grpc.ServiceCall call, $0.HeroById request);
-  $async.Stream<$0.Ping> pingStream(
-      $grpc.ServiceCall call, $async.Stream<$0.Ping> request);
+  $async.Stream<$0.Ping> pingStream($grpc.ServiceCall call, $0.Void request);
+  $async.Future<$0.Void> addMessage($grpc.ServiceCall call, $0.Message request);
+  $async.Stream<$0.Message> messageStream(
+      $grpc.ServiceCall call, $0.Void request);
 }

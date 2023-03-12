@@ -39,3 +39,21 @@ const Hero$json = const {
 
 /// Descriptor for `Hero`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List heroDescriptor = $convert.base64Decode('CgRIZXJvEg4KAmlkGAEgASgFUgJpZBISCgRuYW1lGAIgASgJUgRuYW1l');
+@$core.Deprecated('Use messageDescriptor instead')
+const Message$json = const {
+  '1': 'Message',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 5, '10': 'id'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `Message`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List messageDescriptor = $convert.base64Decode('CgdNZXNzYWdlEg4KAmlkGAEgASgFUgJpZBIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use voidDescriptor instead')
+const Void$json = const {
+  '1': 'Void',
+};
+
+/// Descriptor for `Void`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List voidDescriptor = $convert.base64Decode('CgRWb2lk');

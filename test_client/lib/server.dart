@@ -32,11 +32,7 @@ void main() {
     });
 
     test('PingStream', () async {
-      final request = Ping()..id = 1;
-
-      final responseStream = stub.pingStream(
-        Stream.periodic(Duration(seconds: 1), (i) => request),
-      );
+      final responseStream = stub.pingStream(Void());
 
       await expectLater(
         responseStream,
@@ -46,6 +42,24 @@ void main() {
           Ping()..id = 3,
           Ping()..id = 4,
           Ping()..id = 5
+        ]),
+      );
+    });
+
+    test('MessageStream', () async {
+      final responseStream = stub.messageStream(Void());
+
+      final String message = 'Hello world';
+      stub.addMessage(Message(id: 1, message: message));
+      stub.addMessage(Message(id: 1, message: message));
+      stub.addMessage(Message(id: 1, message: message));
+
+      await expectLater(
+        responseStream,
+        emitsInOrder([
+          Message(id: 0, message: message),
+          Message(id: 1, message: message),
+          Message(id: 2, message: message),
         ]),
       );
     });

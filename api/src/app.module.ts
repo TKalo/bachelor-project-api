@@ -21,3 +21,4 @@ export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
   imports: [GrpcReflectionModule.register(grpcClientOptions)],
 })
 export class AppModule {}
+

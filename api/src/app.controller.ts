@@ -4,24 +4,47 @@ import {
   HeroById,
   HeroServiceController,
   HeroServiceControllerMethods,
+  Message,
   Ping,
+  Void,
 } from 'generated_proto/hero';
+import { ChangeStreamDocument } from 'mongodb';
 import { Observable, Subject } from 'rxjs';
+import { PersistenceService } from './app.persistence';
 
 @Controller()
 @HeroServiceControllerMethods()
 export class AppController implements HeroServiceController {
-  pingStream(request: Observable<Ping>): Observable<Ping> {
-    const subject = new Subject<Ping>();
+  addMessage(request: Message): Void | Promise<Void> | Observable<Void> {
+    const service = new PersistenceService();
 
-    Logger.debug('PING STREAM STARTED');
-
-    request.subscribe({
-      complete: () => {
-        subject.complete();
-        Logger.debug('PING STREAM ENDED');
-      },
+    service.connect().then(() => {
+      service.addMessage(request.message);
     });
+
+    return {};
+  }
+
+  messageStream(request: Void): Observable<Message> {
+    const subject = new Subject<Message>();
+
+    const service = new PersistenceService();
+
+    service.connect().then(() => {
+      const changeStream = service.watchCollection();
+
+      let x = 0;
+      changeStream.on('change', (event: ChangeStreamDocument<Document>) => {
+        subject.next({ id: x, message: event.operationType });
+        x++;
+      });
+    });
+
+    return subject
+  }
+
+  pingStream(request: Void): Observable<Ping> {
+    const subject = new Subject<Ping>();
 
     this.infinitePing(subject);
 

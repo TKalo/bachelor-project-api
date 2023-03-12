@@ -17,28 +17,44 @@ export interface Hero {
   name: string;
 }
 
+export interface Message {
+  id: number;
+  message: string;
+}
+
+export interface Void {
+}
+
 export const HERO_PACKAGE_NAME = "hero";
 
 export interface HeroServiceClient {
   findOne(request: HeroById): Observable<Hero>;
 
-  pingStream(request: Observable<Ping>): Observable<Ping>;
+  pingStream(request: Void): Observable<Ping>;
+
+  addMessage(request: Message): Observable<Void>;
+
+  messageStream(request: Void): Observable<Message>;
 }
 
 export interface HeroServiceController {
   findOne(request: HeroById): Promise<Hero> | Observable<Hero> | Hero;
 
-  pingStream(request: Observable<Ping>): Observable<Ping>;
+  pingStream(request: Void): Observable<Ping>;
+
+  addMessage(request: Message): Promise<Void> | Observable<Void> | Void;
+
+  messageStream(request: Void): Observable<Message>;
 }
 
 export function HeroServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["findOne"];
+    const grpcMethods: string[] = ["findOne", "pingStream", "addMessage", "messageStream"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("HeroService", method)(constructor.prototype[method], method, descriptor);
     }
-    const grpcStreamMethods: string[] = ["pingStream"];
+    const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcStreamMethod("HeroService", method)(constructor.prototype[method], method, descriptor);
