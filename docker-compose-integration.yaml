@@ -5,22 +5,39 @@ services:
     build: ./api
     depends_on:
       - mongo
+    volumes:
+      - ./proto:/app/proto
     networks:
       - default
 
   client:
     build: ./test_client
     command: sh -c "sleep 7 && npm start"
+    volumes:
+    - ./proto:/app/proto
     depends_on:
       - api
     networks:
       - default
 
   mongo:
-    image: mongo:latest
-    command: mongod --replSet rs0 --bind_ip_all --oplogSize 8
+    image: mongo:4
+    # command: mongod --replSet rs0 --bind_ip_all --oplogSize 8
     environment:
       MONGO_INITDB_REPLICA_SET_NAME: rs0
       MONGO_INITDB_ENABLE_CLUSTER_AUTH: "false"
+    volumes:
+      - mongodb4_data:/data/db
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: test $$(echo "rs.initiate().ok || rs.status().ok" | mongo --quiet) -eq 1
+      interval: 10s
+      start_period: 30s
+    command: "--bind_ip_all --replSet rs0 --oplogSize 8"
+
+volumes:
+  mongodb4_data:
+
 networks:
   default:
