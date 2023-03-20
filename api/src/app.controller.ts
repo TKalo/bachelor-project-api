@@ -1,4 +1,5 @@
-import { Controller, Logger } from '@nestjs/common';
+import { Metadata } from '@grpc/grpc-js/build/src/metadata';
+import { Controller } from '@nestjs/common';
 import {
   Hero,
   HeroById,
@@ -15,6 +16,17 @@ import { PersistenceService } from './app.persistence';
 @Controller()
 @HeroServiceControllerMethods()
 export class AppController implements HeroServiceController {
+  returnToken(
+    request: Void,
+    metadata?: Metadata,
+  ): Message | Observable<Message> | Promise<Message> {
+    const token = metadata
+      .get('authentication')
+      ?.toString()
+      ?.replace(/^Bearer\s/, '');
+    return { id: 0, message: token || 'No token found in metadata' };
+  }
+
   addMessage(request: Message): Void | Promise<Void> | Observable<Void> {
     const service = new PersistenceService();
 
@@ -40,7 +52,7 @@ export class AppController implements HeroServiceController {
       });
     });
 
-    return subject
+    return subject;
   }
 
   pingStream(request: Void): Observable<Ping> {

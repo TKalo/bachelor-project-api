@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package hero;
+
+service HeroService {
+    rpc FindOne (HeroById) returns (Hero);
+    rpc PingStream (Void) returns (stream Ping);
+    rpc AddMessage (Message) returns (Void);
+    rpc MessageStream (Void) returns (stream Message);
+    rpc ReturnToken(Void) returns (Message);
+}
+
+service AuthService {
+    rpc SignUp (Credentials) returns(Void);
+    rpc SignIn (Credentials) returns(AuthTokens);
+}
+
+
+enum AuthSessionServiceError{
+    INTERNAL_ERROR = 0;
+}
+
+service AuthSessionService {
+    rpc SignOut (Void) returns (Void);
+    rpc RefreshAccessToken (Void) returns (AuthTokens);
+}
+
+message Credentials{
+    string email = 1;
+    string password = 2;
+}
+
+message AuthTokens{
+    string refreshToken = 1;
+    string accessToken = 2;
+}
+
+message Ping {
+    int32 id = 1;
+}
+
+message HeroById {
+    int32 id = 1;
+}
+
+message Hero {
+    int32 id = 1;
+    string name = 2;
+}
+
+message Message {
+    int32 id = 1;
+    string message = 2;
+}
+
+message Void {}
