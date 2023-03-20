@@ -7,11 +7,12 @@ service HeroService {
     rpc PingStream (Void) returns (stream Ping);
     rpc AddMessage (Message) returns (Void);
     rpc MessageStream (Void) returns (stream Message);
+    rpc ReturnToken(Void) returns (Message);
 }
 
 service AuthService {
     rpc SignUp (Credentials) returns(Void);
-    rpc SignIn (Credentials) returns(RefreshToken);
+    rpc SignIn (Credentials) returns(AuthTokens);
 }
 
 
@@ -20,8 +21,8 @@ enum AuthSessionServiceError{
 }
 
 service AuthSessionService {
-    rpc SignOut (RefreshToken) returns (Void);
-    rpc RefreshAccessToken (RefreshToken) returns (AccessToken);
+    rpc SignOut (Void) returns (Void);
+    rpc RefreshAccessToken (Void) returns (AuthTokens);
 }
 
 message Credentials{
@@ -29,12 +30,9 @@ message Credentials{
     string password = 2;
 }
 
-message RefreshToken{
-    string token = 1;
-}
-
-message AccessToken{
-    string token = 1;
+message AuthTokens{
+    string refreshToken = 1;
+    string accessToken = 2;
 }
 
 message Ping {

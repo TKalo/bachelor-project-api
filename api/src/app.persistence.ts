@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ChangeStream, Collection, MongoClient } from 'mongodb';
+import { ChangeStream, Collection, MongoClient, ReadPreference } from 'mongodb';
 
 @Injectable()
 export class PersistenceService {
@@ -14,7 +14,15 @@ export class PersistenceService {
       const url = 'mongodb://mongo:27017';
       // Create a MongoDB client
       this.client = new MongoClient(url, {
-        readConcernLevel: 'local',
+        readConcernLevel: 'majority',
+        replicaSet:  'rs0',
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 10000,
+        connectTimeoutMS: 10000,
+        waitQueueTimeoutMS: 10000,
+        readPreference: 'primary',
+        ssl: false,
+        
       });
 
       // Connect to the MongoDB database and return a collection
