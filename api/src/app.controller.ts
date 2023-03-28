@@ -66,7 +66,7 @@ export class AppController implements HeroServiceController {
   async infinitePing(subject: Subject<Ping>) {
     let x = 0;
     while (!subject.isStopped) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       x++;
       subject.next({ id: x });
     }
