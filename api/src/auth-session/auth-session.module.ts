@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { MongoModule } from 'src/common/mongo.service';
+import { MongoModule } from '../common/mongo.service';
 
 import { AuthSessionController } from './auth-session.controller';
 import { AuthSessionPersistenceService } from './auth-session.persistence';

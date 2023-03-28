@@ -4,6 +4,9 @@ import { JwtService } from '@nestjs/jwt';
 import { DateTime, Duration } from 'luxon';
 import { ObjectId } from 'mongodb';
 import { AuthSessionPersistenceService } from './auth-session.persistence';
+import { InvalidRefreshTokenError } from './errors/invalid-refresh-token.error';
+import { AuthSession } from './types/auth-session.entity';
+import { AuthTokens } from './types/auth-tokens.entity';
 const crypto = require('crypto');
 
 @Injectable()
@@ -15,9 +18,7 @@ export class AuthSessionService {
   ) {}
 
   async signOut(token: string) {
-    await this.refreshTokenGuard(token);
-
-    this.persistence.deleteSession(token);
+    await this.persistence.deleteSession(token);
   }
 
   async refreshAccessToken(token: string) {
@@ -34,7 +35,7 @@ export class AuthSessionService {
     });
   }
 
-  async createSession(userId: ObjectId): Promise<string> {
+  async createSession(userId: ObjectId): Promise<AuthTokens> {
     const refreshToken = await this.generateRefreshToken();
     const expirationDays = this.configService.getOrThrow(
       'AUTH_SESSION_EXPIRATION_DAYS',
@@ -53,7 +54,12 @@ export class AuthSessionService {
       expiration,
     );
 
-    return refreshToken;
+    const accessToken = this.generateAccessToken(userId);
+
+    return {
+      refreshToken: refreshToken,
+      accessToken: accessToken,
+    };
   }
 
   private async generateRefreshToken(): Promise<string> {
@@ -67,8 +73,13 @@ export class AuthSessionService {
   }
 
   async refreshTokenGuard(token: string): Promise<void> {
-    const session = await this.persistence.getSessionFromToken(token);
-
-    if (session == null) throw new Error('invalid refresh token');
+    let session: AuthSession;
+    try{
+      session = await this.persistence.getSessionFromToken(token);
+    }catch(e){
+      throw new InvalidRefreshTokenError();
+    }
+    if (session == null) throw new InvalidRefreshTokenError();
+    if(session.expiresAt < new Date()) throw new InvalidRefreshTokenError();
   }
 }

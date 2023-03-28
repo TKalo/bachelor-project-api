@@ -2,17 +2,14 @@ import { Metadata } from '@grpc/grpc-js/build/src/metadata';
 import { Controller, UseGuards } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import {
-  AuthTokens,
   AuthSessionServiceController,
   AuthSessionServiceControllerMethods,
-  AuthSessionServiceError,
-  Void,
+  AuthSessionServiceError, AuthTokens, Void
 } from 'generated_proto/hero';
 
 import { Observable } from 'rxjs';
-import { AuthGuard } from 'src/common/auth.guard';
+import { AuthGuard } from '../common/auth.guard';
 import { AuthSessionService } from './auth-session.service';
-import { AuthSessionGuard } from './guards/auth-session.guard';
 
 @Controller()
 @AuthSessionServiceControllerMethods()
@@ -24,7 +21,7 @@ export class AuthSessionController implements AuthSessionServiceController {
     request: Void,
     metadata: Metadata,
   ): Void | Observable<Void> | Promise<Void> {
-    return new Promise(async () => {
+    return new Promise(async (resolve, reject) => {
       const authToken = metadata
         .get('authentication')
         ?.toString()
@@ -32,34 +29,50 @@ export class AuthSessionController implements AuthSessionServiceController {
 
       try {
         await this.authSessionService.signOut(authToken);
-        return {};
+        resolve({});
       } catch (e) {
-        throw new RpcException(
-          AuthSessionServiceError.INTERNAL_ERROR.toLocaleString(),
+        reject(
+          new RpcException({
+            code: 13,
+            message:
+              AuthSessionServiceError[
+                AuthSessionServiceError.AUTH_SESSION_INTERNAL
+              ],
+          }),
         );
       }
     });
   }
 
-  @UseGuards(AuthSessionGuard)
+  @UseGuards(AuthGuard)
   refreshAccessToken(
     request: Void,
     metadata: Metadata,
   ): AuthTokens | Observable<AuthTokens> | Promise<AuthTokens> {
-    return new Promise(async () => {
+    return new Promise(async (resolve, reject) => {
       const authToken = metadata
         .get('authentication')
         ?.toString()
         ?.replace(/^Bearer\s/, '');
 
       try {
-        const token = await this.authSessionService.refreshAccessToken(authToken);
-        return {
-          token: token,
-        };
+        const token = await this.authSessionService.refreshAccessToken(
+          authToken,
+        );
+
+        resolve({
+          accessToken: token,
+          refreshToken: authToken,
+        });
       } catch (e) {
-        throw new RpcException(
-          AuthSessionServiceError.INTERNAL_ERROR.toLocaleString(),
+        reject(
+          new RpcException({
+            code: 13,
+            message:
+              AuthSessionServiceError[
+                AuthSessionServiceError.AUTH_SESSION_INTERNAL
+              ],
+          }),
         );
       }
     });
