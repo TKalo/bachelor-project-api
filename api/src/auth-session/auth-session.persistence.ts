@@ -13,7 +13,7 @@ export class AuthSessionPersistenceService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    await (await this.authSessionCollection).createIndex(
+    await this.authSessionCollection.createIndex(
       { refreshToken: 1 },
       { unique: true },
     );

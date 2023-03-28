@@ -1,33 +1,33 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Collection, MongoClient } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
-import { AuthGuard } from 'src/common/auth.guard';
-import { MongoModule, MongoService } from '../../common/mongo.service';
-import { AuthSessionPersistenceService } from '../auth-session.persistence';
-import { AuthSessionService } from '../auth-session.service';
-import { AuthSessionGuard } from '../guards/auth-session.guard';
-import { AuthSession } from '../types/auth-session.entity';
+import { AuthSessionPersistenceService } from '../auth-session/auth-session.persistence';
+import { AuthSessionService } from '../auth-session/auth-session.service';
+import { AuthPersistenceService } from '../auth/auth.persistence';
+import { AuthService } from '../auth/auth.service';
+import { MongoModule, MongoService } from './mongo.service';
+
 
 export interface TestContext {
   mongoClient: MongoClient;
   mongoServer: MongoMemoryReplSet;
-  collection: Collection<AuthSession>;
   t: TestingModule;
 }
 
 export async function init(): Promise<TestContext> {
   let mongoClient: MongoClient;
   let mongoServer: MongoMemoryReplSet;
-  let collection: Collection<AuthSession>;
+  let db: Db;
+
   // Create a new MongoDB client and connect to the in-memory MongoDB server
   mongoServer = await MongoMemoryReplSet.create({
     replSet: { storageEngine: 'wiredTiger' },
   });
   const mongoUri = mongoServer.getUri();
   mongoClient = await MongoClient.connect(mongoUri, {});
-  collection = mongoClient.db('db').collection('collection');
+  db = mongoClient.db('test');
 
   // Create a new testing module
   const builder = Test.createTestingModule({
@@ -42,18 +42,22 @@ export async function init(): Promise<TestContext> {
       }),
     ],
     providers: [
+      AuthService,
+      AuthPersistenceService,
       AuthSessionService,
       AuthSessionPersistenceService,
       MongoService,
     ],
+
   });
 
   builder.overrideProvider(MongoService).useValue({
     getCollection: (collectionName: string) => {
-      return collection;
+      return db.collection(collectionName);
     },
   });
 
+  
   builder.overrideProvider(ConfigService).useValue({
     getOrThrow: (key: string) => {
       switch (key) {
@@ -67,12 +71,9 @@ export async function init(): Promise<TestContext> {
 
   const module = await builder.compile();
 
-
-
   return {
     mongoClient: mongoClient,
     mongoServer: mongoServer,
-    collection: collection,
     t: module,
   };
 }

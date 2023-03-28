@@ -8,6 +8,7 @@ import {
 import { join } from 'path';
 import { AppController } from './app.controller';
 import { AuthSessionModule } from './auth-session/auth-session.module';
+import { AuthModule } from './auth/auth.module';
 
 export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
   transport: Transport.GRPC,
@@ -20,7 +21,7 @@ export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
 
 @Module({
   controllers: [AppController],
-  imports: [GrpcReflectionModule.register(grpcClientOptions), AuthSessionModule, ConfigModule.forRoot()],
+  imports: [GrpcReflectionModule.register(grpcClientOptions), AuthSessionModule, AuthModule, ConfigModule.forRoot()],
 })
 export class AppModule {}
 

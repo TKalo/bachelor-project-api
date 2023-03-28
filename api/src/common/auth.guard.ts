@@ -1,35 +1,49 @@
-import { CanActivate, ExecutionContext } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { Observable } from "rxjs";
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
+import { AuthSessionServiceError } from 'generated_proto/hero';
+import { Observable } from 'rxjs';
+import { AuthSessionService } from '../auth-session/auth-session.service';
 
-export class AuthGuard implements CanActivate{
+@Injectable()
+export class AuthGuard implements CanActivate {
+  constructor(private service: AuthSessionService) {}
 
-    constructor(private  jwtService: JwtService) {
-
-    }
-
-    canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    return new Promise<boolean>(async (resolve, reject) => {
+      try {
         const type = context.getType();
-        const prefix = "Bearer ";
-        let header;
-        if(type==='rpc'){
-            const metadata = context.getArgByIndex(1); // metadata
-            if (metadata == null) {
-                return false;
-            }
-            header = metadata.get('Authorization')[0];
-        }
-        
-        if (!header || !header.includes(prefix)) {
-            return false;
+
+        if (type === 'rpc') {
+          const metadata = context.getArgByIndex(1); // metadata
+          const token = metadata
+            .get('authentication')
+            ?.toString()
+            ?.replace(/^Bearer\s/, '');
+
+          await this.service.refreshTokenGuard(token);
+
+          resolve(true);
         }
 
-        const token = header.slice(header.indexOf(' ') + 1);
-        try {
-            this.jwtService.verify(token);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }
+        reject(
+          new RpcException({
+            code: 12,
+            message: 'Rpc protocol required for authentication',
+          }),
+        );
+      } catch (e) {
+        reject(
+          new RpcException({
+            code: 16,
+            message:
+              AuthSessionServiceError[
+                AuthSessionServiceError.AUTH_SESSION_INVALID_REFRESH_TOKEN
+              ],
+          }),
+        );
+      }
+    });
+  }
 }

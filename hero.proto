@@ -11,18 +11,26 @@ service HeroService {
 }
 
 service AuthService {
-    rpc SignUp (Credentials) returns(Void);
+    rpc SignUp (Credentials) returns(AuthTokens);
     rpc SignIn (Credentials) returns(AuthTokens);
-}
-
-
-enum AuthSessionServiceError{
-    INTERNAL_ERROR = 0;
 }
 
 service AuthSessionService {
     rpc SignOut (Void) returns (Void);
     rpc RefreshAccessToken (Void) returns (AuthTokens);
+}
+
+
+enum AuthSessionServiceError{
+    AUTH_SESSION_INTERNAL = 0;
+    AUTH_SESSION_INVALID_REFRESH_TOKEN = 1;
+}
+
+enum AuthServiceError{
+    AUTH_INTERNAL = 0;
+    AUTH_EMAIL_TAKEN = 1;
+    AUTH_USER_NOT_FOUND = 2;
+    AUTH_WRONG_PASSWORD = 3;
 }
 
 message Credentials{

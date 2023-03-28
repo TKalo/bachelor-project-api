@@ -1,26 +1,31 @@
-import { ObjectId } from 'mongodb';
+import { Collection, ObjectId } from 'mongodb';
+import { MongoService } from '../../common/mongo.service';
+import { init, TestContext } from '../../common/test-environment';
 
 import { AuthSessionPersistenceService } from '../auth-session.persistence';
-import { init, TestContext } from './auth-session.test-environment';
+import { AuthSession } from '../types/auth-session.entity';
 
 describe('AuthSessionPersistenceService', () => {
   let service: AuthSessionPersistenceService;
-  let env: TestContext;
+  let context: TestContext;
   const token = "token"
-
+  let collection: Collection<AuthSession>;
+  
   beforeAll(async () => {
-    env = await init();
-    service = env.t.get<AuthSessionPersistenceService>(AuthSessionPersistenceService);
+    context = await init();
+    service = context.t.get<AuthSessionPersistenceService>(AuthSessionPersistenceService);
+    const mongoService = context.t.get<MongoService>(MongoService);
+    collection = mongoService.getCollection(AuthSession.name)    
   });
 
 
   afterAll(async () => {
-    await env.mongoClient.close();
-    await env.mongoServer.stop();
+    await context.mongoClient.close();
+    await context.mongoServer.stop();
   });
 
   afterEach(async () => {
-    await env.collection.deleteMany({});
+    await collection.deleteMany({});
   });
 
   it('create session', async () => {
