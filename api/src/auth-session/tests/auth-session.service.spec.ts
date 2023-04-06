@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { Collection, ObjectId } from 'mongodb';
-import { MongoService } from '../../common/mongo.service';
+import { MongoService } from '../../common/services/mongo.service';
 import { init, TestContext } from '../../common/test-environment';
 
 import { AuthSessionService } from '../auth-session.service';
