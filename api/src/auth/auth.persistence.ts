@@ -1,7 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Collection } from 'mongodb';
-import { MongoService } from '../common/mongo.service';
-import { EmailTakenError } from './errors/email-taken.error';
+import { MongoService } from '../common/services/mongo.service';
 import { AuthUser } from './types/auth-user.entity';
 
 @Injectable()
@@ -25,10 +24,6 @@ export class AuthPersistenceService implements OnModuleInit {
     password: string,
     salt: string,
   ): Promise<AuthUser> {
-
-    const existingUser = await this.authUserCollection.findOne({email: email});
-
-    if(existingUser) throw new EmailTakenError();
 
     let user = {
       _id: null,
