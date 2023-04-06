@@ -7,7 +7,10 @@ import { AuthSessionPersistenceService } from '../auth-session/auth-session.pers
 import { AuthSessionService } from '../auth-session/auth-session.service';
 import { AuthPersistenceService } from '../auth/auth.persistence';
 import { AuthService } from '../auth/auth.service';
-import { MongoModule, MongoService } from './mongo.service';
+import { MongoModule, MongoService } from './services/mongo.service';
+import { ProfileService } from '../profile/profile.service';
+import { ProfilePersistenceService } from '../profile/profile.persistence';
+import { JwtHandlerService } from './services/jwt.service';
 
 
 export interface TestContext {
@@ -46,6 +49,9 @@ export async function init(): Promise<TestContext> {
       AuthPersistenceService,
       AuthSessionService,
       AuthSessionPersistenceService,
+      ProfileService,
+      ProfilePersistenceService,
+      JwtHandlerService,
       MongoService,
     ],
 
