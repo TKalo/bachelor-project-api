@@ -2,13 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GrpcOptions, Transport } from '@nestjs/microservices';
 import {
+  GrpcReflectionModule,
   addReflectionToGrpcConfig,
-  GrpcReflectionModule
 } from 'nestjs-grpc-reflection';
 import { join } from 'path';
 import { AppController } from './app.controller';
 import { AuthSessionModule } from './auth-session/auth-session.module';
 import { AuthModule } from './auth/auth.module';
+import { ProfileModule } from './profile/profile.module';
 
 export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
   transport: Transport.GRPC,
@@ -21,7 +22,13 @@ export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
 
 @Module({
   controllers: [AppController],
-  imports: [GrpcReflectionModule.register(grpcClientOptions), AuthSessionModule, AuthModule, ConfigModule.forRoot()],
+  imports: [
+    GrpcReflectionModule.register(grpcClientOptions),
+    AuthSessionModule,
+    AuthModule,
+    ProfileModule,
+    ConfigModule.forRoot(),
+  ],
 })
 export class AppModule {}
 
