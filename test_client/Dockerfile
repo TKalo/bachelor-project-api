@@ -1,16 +1,22 @@
-# Use the official Dart image.
-# https://hub.docker.com/r/google/dart-runtime
+
 FROM google/dart-runtime AS build
 
-# Set the working directory.
 WORKDIR /app
 
-# Copy the pubspec file and get the dependencies.
-COPY pubspec.* /app/
-RUN dart pub get
+RUN apt-get update
 
-# Copy the lib directory.
+RUN apt-get install -y protobuf-compiler
+
+RUN pub global activate protoc_plugin
+
+COPY hero.proto /app/
+
+COPY pubspec.* /app/
+
 COPY lib/ /app/bin/
 
-# Run the tests.
+RUN protoc --dart_out=grpc:lib/generated_proto -I/app/ /app/hero.proto
+
+RUN dart pub get
+
 CMD ["dart", "test"]

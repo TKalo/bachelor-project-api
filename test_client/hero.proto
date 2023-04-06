@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package hero;
+
+service HeroService {
+    rpc FindOne (HeroById) returns (Hero);
+    rpc PingStream (Void) returns (stream Ping);
+    rpc AddMessage (Message) returns (Void);
+    rpc MessageStream (Void) returns (stream Message);
+    rpc ReturnToken(Void) returns (Message);
+}
+
+service AuthService {
+    rpc SignUp (Credentials) returns(AuthTokens);
+    rpc SignIn (Credentials) returns(AuthTokens);
+}
+
+service AuthSessionService {
+    rpc SignOut (Void) returns (Void);
+    rpc RefreshAccessToken (Void) returns (AuthTokens);
+}
+
+service ProfileService {
+    rpc createProfile(Profile) returns (Void);
+    rpc updateProfile(Profile) returns (Void);
+    rpc getProfile(Void) returns (Profile);
+    rpc streamProfile(Void) returns (stream ProfileChange);
+}
+
+enum AuthSessionServiceError{
+    AUTH_SESSION_INTERNAL = 0;
+}
+
+
+enum ValidationError{
+    VALIDATION_INTERNAL = 0;
+    VALIDATION_INVALID_REFRESH_TOKEN = 1;
+    VALIDATION_INVALID_ACCESS_TOKEN = 2;
+}
+
+enum AuthServiceError{
+    AUTH_INTERNAL = 0;
+    AUTH_EMAIL_TAKEN = 1;
+    AUTH_USER_NOT_FOUND = 2;
+    AUTH_WRONG_PASSWORD = 3;
+}
+
+enum ProfileServiceError{
+    PROFILE_INTERNAL = 0;
+    PROFILE_DATA_INSUFFICIENT = 1;
+    PROFILE_DOES_NOT_EXIST = 2;
+    PROFILE_EXISTS = 3;
+}
+
+
+enum ChangeType {
+    CREATE = 0;
+    UPDATE = 1;
+    DELETE = 2;
+}
+
+message Credentials{
+    string email = 1;
+    string password = 2;
+}
+
+message AuthTokens{
+    string refreshToken = 1;
+    string accessToken = 2;
+}
+
+message Ping {
+    int32 id = 1;
+}
+
+message HeroById {
+    int32 id = 1;
+}
+
+message Hero {
+    int32 id = 1;
+    string name = 2;
+}
+
+message Message {
+    int32 id = 1;
+    string message = 2;
+}
+
+message Profile {
+    string name = 1;
+}
+
+message ProfileChange{
+    ChangeType changeType = 1;
+    Profile profile = 2;
+}
+
+message Void {}
