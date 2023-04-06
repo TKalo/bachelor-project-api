@@ -1,20 +1,25 @@
 import { Metadata } from '@grpc/grpc-js/build/src/metadata';
 import { Controller, UseGuards } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
 import {
   AuthSessionServiceController,
   AuthSessionServiceControllerMethods,
-  AuthSessionServiceError, AuthTokens, Void
+  AuthTokens,
+  Void
 } from 'generated_proto/hero';
 
 import { Observable } from 'rxjs';
-import { AuthGuard } from '../common/auth.guard';
+import { GrpcService } from 'src/common/services/grpc.service';
 import { AuthSessionService } from './auth-session.service';
+import { AuthSessionInternalGrpcError } from './errors/auth-session-internal.grpc-error';
+import { AuthGuard } from './guards/auth.guard';
 
 @Controller()
 @AuthSessionServiceControllerMethods()
 export class AuthSessionController implements AuthSessionServiceController {
-  constructor(private readonly authSessionService: AuthSessionService) {}
+  constructor(
+    private readonly authSessionService: AuthSessionService,
+    private readonly grpcService: GrpcService,
+  ) {}
 
   @UseGuards(AuthGuard)
   signOut(
@@ -22,24 +27,13 @@ export class AuthSessionController implements AuthSessionServiceController {
     metadata: Metadata,
   ): Void | Observable<Void> | Promise<Void> {
     return new Promise(async (resolve, reject) => {
-      const authToken = metadata
-        .get('authentication')
-        ?.toString()
-        ?.replace(/^Bearer\s/, '');
+      const refreshToken = this.grpcService.extractToken(metadata);
 
       try {
-        await this.authSessionService.signOut(authToken);
+        await this.authSessionService.signOut(refreshToken);
         resolve({});
       } catch (e) {
-        reject(
-          new RpcException({
-            code: 13,
-            message:
-              AuthSessionServiceError[
-                AuthSessionServiceError.AUTH_SESSION_INTERNAL
-              ],
-          }),
-        );
+        reject(new AuthSessionInternalGrpcError());
       }
     });
   }
@@ -50,30 +44,19 @@ export class AuthSessionController implements AuthSessionServiceController {
     metadata: Metadata,
   ): AuthTokens | Observable<AuthTokens> | Promise<AuthTokens> {
     return new Promise(async (resolve, reject) => {
-      const authToken = metadata
-        .get('authentication')
-        ?.toString()
-        ?.replace(/^Bearer\s/, '');
+      const refreshToken = this.grpcService.extractToken(metadata);
 
       try {
-        const token = await this.authSessionService.refreshAccessToken(
-          authToken,
+        const accessToken = await this.authSessionService.refreshAccessToken(
+          refreshToken,
         );
 
         resolve({
-          accessToken: token,
-          refreshToken: authToken,
+          accessToken: accessToken,
+          refreshToken: accessToken,
         });
       } catch (e) {
-        reject(
-          new RpcException({
-            code: 13,
-            message:
-              AuthSessionServiceError[
-                AuthSessionServiceError.AUTH_SESSION_INTERNAL
-              ],
-          }),
-        );
+        reject(new AuthSessionInternalGrpcError());
       }
     });
   }
