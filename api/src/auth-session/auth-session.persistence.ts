@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Collection, ObjectId } from 'mongodb';
 import { AuthSession } from './types/auth-session.entity';
-import { MongoService } from '../common/mongo.service';
+import { MongoService } from '../common/services/mongo.service';
 
 @Injectable()
 export class AuthSessionPersistenceService implements OnModuleInit {

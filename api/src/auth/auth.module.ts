@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthSessionModule } from 'src/auth-session/auth-session.module';
 import { AuthSessionPersistenceService } from 'src/auth-session/auth-session.persistence';
 import { AuthSessionService } from 'src/auth-session/auth-session.service';
-import { MongoModule } from '../common/mongo.service';
+import { MongoModule } from '../common/services/mongo.service';
 
 import { AuthController } from './auth.controller';
 import { AuthPersistenceService } from './auth.persistence';

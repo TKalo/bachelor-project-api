@@ -1,5 +1,5 @@
 import { Collection, ObjectId } from 'mongodb';
-import { MongoService } from '../../common/mongo.service';
+import { MongoService } from '../../common/services/mongo.service';
 import { init, TestContext } from '../../common/test-environment';
 
 import { AuthSessionPersistenceService } from '../auth-session.persistence';

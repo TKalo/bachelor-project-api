@@ -1,5 +1,5 @@
 import { Collection, MongoServerError } from 'mongodb';
-import { MongoService } from '../../common/mongo.service';
+import { MongoService } from '../../common/services/mongo.service';
 import { init, TestContext } from '../../common/test-environment';
 import { AuthService } from '../auth.service';
 import { EmailTakenError } from '../errors/email-taken.error';

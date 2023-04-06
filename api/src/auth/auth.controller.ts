@@ -1,17 +1,20 @@
 import { Controller } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
 import {
   AuthServiceController,
   AuthServiceControllerMethods,
-  AuthServiceError, AuthTokens,
+  AuthTokens,
   Credentials
 } from '../../generated_proto/hero';
 
+import { RpcException } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { EmailTakenError } from './errors/email-taken.error';
+import { EmailTakenGrpcError } from './errors/email-taken.grpc-error';
 import { UserNotFoundError } from './errors/user-not-found.error';
+import { UserNotFoundGrpcError } from './errors/user-not-found.grpc-error';
 import { WrongPasswordError } from './errors/wrong-password.error';
+import { WrongPasswordGrpcError } from './errors/wrong-password.grpc-error';
 
 @Controller()
 @AuthServiceControllerMethods()
@@ -31,20 +34,13 @@ export class AuthController implements AuthServiceController {
           accessToken: tokens.accessToken,
         });
       } catch (e) {
-        if (e instanceof EmailTakenError) {
-          reject(
-            new RpcException({
-              code: 6,
-              message: AuthServiceError[AuthServiceError.AUTH_EMAIL_TAKEN],
-            }),
-          );
+        if (e.message === new UserNotFoundError().message) {
+          reject(new UserNotFoundGrpcError());
+        } 
+        else if (e.message === new EmailTakenError().message) {
+          reject(new EmailTakenGrpcError());
         } else {
-          reject(
-            new RpcException({
-              code: 13,
-              message: AuthServiceError[AuthServiceError.AUTH_INTERNAL],
-            }),
-          );
+          reject(new RpcException(e));
         }
       }
     });
@@ -62,28 +58,13 @@ export class AuthController implements AuthServiceController {
           refreshToken: tokens.refreshToken,
           accessToken: tokens.accessToken,
         });
-      } catch (e) {
-        if (e instanceof UserNotFoundError) {
-          reject(
-            new RpcException({
-              code: 6,
-              message: AuthServiceError[AuthServiceError.AUTH_USER_NOT_FOUND],
-            }),
-          );
-        } else if (e instanceof WrongPasswordError) {
-          reject(
-            new RpcException({
-              code: 7,
-              message: AuthServiceError[AuthServiceError.AUTH_WRONG_PASSWORD],
-            }),
-          );
+      } catch (e: any) {
+        if (e.message == new UserNotFoundError().message) {
+          reject(new UserNotFoundGrpcError());
+        } else if (e.message == new WrongPasswordError().message) {
+          reject(new WrongPasswordGrpcError());
         } else {
-          reject(
-            new RpcException({
-              code: 13,
-              message: AuthServiceError[AuthServiceError.AUTH_INTERNAL],
-            }),
-          );
+          reject(new RpcException(e));
         }
       }
     });

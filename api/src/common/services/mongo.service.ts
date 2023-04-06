@@ -10,32 +10,30 @@ export class MongoService implements OnModuleDestroy {
   private client: MongoClient;
   private db: Db;
 
-  constructor(private readonly config: ConfigService){
+  constructor(private readonly config: ConfigService) {
     // MongoDB connection URL
-    const url = this.config.getOrThrow('DATABASE_URI')
+    const url = this.config.getOrThrow('DATABASE_URI');
 
-    Logger.log('MONGO_URL:' + url)
+    Logger.log('MONGO_URL:' + url);
 
     // Create a MongoDB client
     this.client = new MongoClient(url, {
-      readConcernLevel: 'local',
-      
+      readConcernLevel: 'majority',
     });
 
-    const dbName = this.config.getOrThrow('DATABASE_NAME')
+    const dbName = this.config.getOrThrow('DATABASE_NAME');
 
     this.db = this.client.db(dbName);
   }
 
-
   getCollection<T>(name: string): Collection<T> {
-    return this.db.collection<T>(name)
+    return this.db.collection<T>(name);
   }
 }
 
 @Module({
-    imports: [ConfigModule],
-    providers: [MongoService],
-    exports: [MongoService],
-  })
-  export class MongoModule {}
+  imports: [ConfigModule],
+  providers: [MongoService],
+  exports: [MongoService],
+})
+export class MongoModule {}

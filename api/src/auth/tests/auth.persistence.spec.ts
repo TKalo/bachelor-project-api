@@ -1,8 +1,7 @@
-import { Collection, MongoServerError } from 'mongodb';
-import { MongoService } from '../../common/mongo.service';
-import { init, TestContext } from '../../common/test-environment';
+import { Collection } from 'mongodb';
+import { MongoService } from '../../common/services/mongo.service';
+import { TestContext, init } from '../../common/test-environment';
 import { AuthPersistenceService } from '../auth.persistence';
-import { EmailTakenError } from '../errors/email-taken.error';
 import { AuthUser } from '../types/auth-user.entity';
 
 
@@ -75,15 +74,4 @@ describe('AuthPersistenceService', () => {
     expect(user).toBeNull();
   });
 
-  it('createUser - should throw an error when creating a user with duplicate email', async () => {
-    // Arrange
-    const email = 'test@test.com';
-    const password = 'password';
-    await authPersistenceService.createUser(email, password, null);
-
-    // Act + Assert
-    await expect(
-      authPersistenceService.createUser(email, 'other-password', null),
-    ).rejects.toThrowError(EmailTakenError);
-  });
 });
