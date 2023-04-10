@@ -19,7 +19,7 @@ import { ProfileInternalGrpcError } from './errors/profile-internal.grpc-error';
 import { HasNoProfileGuard } from './guards/has-no-profile.guard';
 import { HasProfileGuard } from './guards/has-profile.guard';
 import { ProfileService } from './profile.service';
-import { ProfileValidationService } from './profile.validation';
+import { ProfileValidationService } from './validators/profile.validation';
 
 @UseGuards(ValidatedGuard)
 @Controller()

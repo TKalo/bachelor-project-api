@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common/decorators/core/injectable.decorator';
-import { ProfileDataInsufficientError } from './errors/profile-data-insufficient.error';
+import { ProfileDataInsufficientError } from '../errors/profile-data-insufficient.error';
 import { Profile } from 'generated_proto/hero';
 
 @Injectable()
