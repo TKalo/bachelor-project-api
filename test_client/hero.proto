@@ -21,10 +21,18 @@ service AuthSessionService {
 }
 
 service ProfileService {
-    rpc createProfile(Profile) returns (Void);
-    rpc updateProfile(Profile) returns (Void);
-    rpc getProfile(Void) returns (Profile);
-    rpc streamProfile(Void) returns (stream ProfileChange);
+    rpc create(Profile) returns (Void);
+    rpc update(Profile) returns (Void);
+    rpc get(Void) returns (Profile);
+    rpc stream(Void) returns (stream ProfileChange);
+}
+
+
+service SeizureService {
+    rpc create(Profile) returns (Void);
+    rpc delete(Profile) returns (Void);
+    rpc get(Void) returns (Profile);
+    rpc stream(Void) returns (stream ProfileChange);
 }
 
 enum AuthSessionServiceError{
@@ -52,11 +60,21 @@ enum ProfileServiceError{
     PROFILE_EXISTS = 3;
 }
 
+enum SeizureServiceErrors {
+    SEIZURE_INTERNAL = 0;
+    SEIZURE_NEGATIVE_DURATION = 1;
+}
+
 
 enum ChangeType {
     CREATE = 0;
     UPDATE = 1;
     DELETE = 2;
+}
+
+enum SeizureType {
+    Tonic = 0;
+    Atonic = 1;
 }
 
 message Credentials{
@@ -94,6 +112,16 @@ message Profile {
 message ProfileChange{
     ChangeType changeType = 1;
     Profile profile = 2;
+}
+
+message Seizure {
+    SeizureType type = 1;
+    int32 durationSeconds = 2;
+}
+
+message SeizureChange{
+    ChangeType ChangeType = 1;
+    Seizure seizure = 2;
 }
 
 message Void {}
