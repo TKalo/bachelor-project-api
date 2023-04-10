@@ -32,7 +32,7 @@ export class ProfileController implements ProfileServiceController {
   ) {}
 
   @UseGuards(HasNoProfileGuard)
-  createProfile(
+  create(
     request: Profile,
     metadata: Metadata,
   ): Void | Promise<Void> | Observable<Void> {
@@ -56,7 +56,7 @@ export class ProfileController implements ProfileServiceController {
   }
 
   @UseGuards(HasProfileGuard)
-  updateProfile(
+  update(
     request: Profile,
     metadata: Metadata,
   ): Void | Promise<Void> | Observable<Void> {
@@ -82,7 +82,7 @@ export class ProfileController implements ProfileServiceController {
   }
 
   @UseGuards(HasProfileGuard)
-  getProfile(
+  get(
     request: Void,
     metadata: Metadata,
   ): Profile | Promise<Profile> | Observable<Profile> {
@@ -102,7 +102,7 @@ export class ProfileController implements ProfileServiceController {
   }
 
   @UseGuards(HasProfileGuard)
-  streamProfile(request: Void, metadata?: Metadata): Observable<ProfileChange> {
+  stream(request: Void, metadata?: Metadata): Observable<ProfileChange> {
     try {
       const accessToken = this.grpcService.extractToken(metadata);
 
