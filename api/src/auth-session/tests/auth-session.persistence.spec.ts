@@ -6,14 +6,14 @@ import { AuthSessionPersistenceService } from '../auth-session.persistence';
 import { AuthSession } from '../types/auth-session.entity';
 
 describe('AuthSessionPersistenceService', () => {
-  let service: AuthSessionPersistenceService;
+  let persistence: AuthSessionPersistenceService;
   let context: TestContext;
   const token = "token"
   let collection: Collection<AuthSession>;
   
   beforeAll(async () => {
     context = await init();
-    service = context.t.get<AuthSessionPersistenceService>(AuthSessionPersistenceService);
+    persistence = context.t.get<AuthSessionPersistenceService>(AuthSessionPersistenceService);
     const mongoService = context.t.get<MongoService>(MongoService);
     collection = mongoService.getCollection(AuthSession.name)    
   });
@@ -28,28 +28,30 @@ describe('AuthSessionPersistenceService', () => {
     await collection.deleteMany({});
   });
 
-  it('create session', async () => {
-    let session = await service.getSessionFromToken(token);
+  it('createSession', async () => {
+    let session = await persistence.getSessionFromToken(token);
 
     expect(session == null).toBeTruthy();
 
-    await service.createSession(new ObjectId(), token, new Date());
+    await persistence.createSession(new ObjectId(), token, new Date());
 
-    session = await service.getSessionFromToken(token);
+    session = await persistence.getSessionFromToken(token);
 
     expect(session != null).toBeTruthy();
+
+    //TODO: check values of session
   });
 
-  it('delete session', async () => {
-    await service.createSession(new ObjectId(), token, new Date());
+  it('deleteSession', async () => {
+    await persistence.createSession(new ObjectId(), token, new Date());
 
-    let session = await service.getSessionFromToken(token);
+    let session = await persistence.getSessionFromToken(token);
 
     expect(session != null).toBeTruthy();
 
-    await service.deleteSession(token);
+    await persistence.deleteSession(token);
 
-    session = await service.getSessionFromToken(token);
+    session = await persistence.getSessionFromToken(token);
 
     expect(session == null).toBeTruthy();
   });

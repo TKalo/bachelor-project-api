@@ -72,9 +72,7 @@ describe('AuthSessionService', () => {
   });
 
   it('signOut - when token does not exist, should act as if it was removed', async () => {
-    const userId = new ObjectId();
     const token = "non existing token";
-
 
     await service.signOut(token);
 

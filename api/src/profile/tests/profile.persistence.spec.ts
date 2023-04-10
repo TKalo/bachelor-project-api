@@ -32,7 +32,7 @@ describe('ProfilePersistenceService', () => {
     await collection.deleteMany({});
   });
 
-  it('createProfile', async () => {
+  it('createProfile - when valid input is given, should add profile to database', async () => {
     const userId = new ObjectId();
     const name = 'John Doe';
 
@@ -45,7 +45,7 @@ describe('ProfilePersistenceService', () => {
     expect(profile.name).toEqual(name);
   });
 
-  it('updateProfile', async () => {
+  it('updateProfile - when valid input is given, should update profile in database', async () => {
     const result = await collection.insertOne({ _id: null, name: 'John Doe' });
 
     const name = 'Jane Doe';
@@ -59,7 +59,7 @@ describe('ProfilePersistenceService', () => {
     expect(profile.name).toEqual(name);
   });
 
-  it('getProfile', async () => {
+  it('getProfile - when profile exist in database, should return profile', async () => {
     const name = 'John Doe';
     const result = await collection.insertOne({ _id: null, name: name });
 
@@ -73,7 +73,7 @@ describe('ProfilePersistenceService', () => {
     expect(profile.name).toEqual(name);
   });
 
-  it('streamProfile - should emit a create event when a new profile is created', async () => {
+  it('streamProfile - should emit a CREATE event when a new profile is created', async () => {
     const userId = new ObjectId();
     const name = 'John Doe';
 

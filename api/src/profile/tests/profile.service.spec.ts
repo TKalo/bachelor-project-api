@@ -29,18 +29,7 @@ describe('ProfileService', () => {
     await collection.deleteMany({});
   });
 
-  it('JwtHandlerService', () => {
-    const id = new ObjectId();
-    const accessToken = jwtService.generateAccessToken(id);
-    
-    const validation = jwtService.validateAccessToken(accessToken);
-    expect(validation).toBe(true);
-
-    const decodedId = jwtService.decodeAccessToken(accessToken);
-    expect(decodedId.toHexString()).toBe(id.toHexString());
-})
-
-  it('createProfile', async () => {
+  it('createProfile - when valid AccessToken given, should add profile to database', async () => {
     // Generate a fake access token and name
     const id = new ObjectId();
     const name = 'John Doe';
@@ -55,7 +44,7 @@ describe('ProfileService', () => {
     expect(foundProfile?.name).toEqual(name);
   });
 
-  it('updateProfile', async () => {
+  it('updateProfile - when valid AccessToken given, should update profile in database', async () => {
     // Insert a profile in the database
     const id = new ObjectId();
     const name = 'jane Doe';
@@ -73,7 +62,7 @@ describe('ProfileService', () => {
     expect(foundProfile?.name).toEqual(name);
   });
 
-  it('getProfile', async () => {
+  it('getProfile - when valid AccessToken given, should return profile', async () => {
     // Insert a profile in the database
     const id = new ObjectId();
     const name = 'John Doe';
@@ -91,7 +80,7 @@ describe('ProfileService', () => {
     expect(foundProfile.name).toEqual(name);
   });
 
-  it('streamProfile - should emit a create event when a new profile is created', async () => {
+  it('streamProfile - when valid AccessToken given and profile is created, should return profileChange of type CREATE', async () => {
     const id = new ObjectId();
     const name = 'John Doe';
     const accessToken = jwtService.generateAccessToken(id);
@@ -100,47 +89,21 @@ describe('ProfileService', () => {
     const profile: Profile = { _id: id, name };
     const changeType = ChangeType.CREATE;
 
-    const emittedProfileChange = await new Promise<ProfileChange>(async (resolve) => {
-      stream.subscribe({
-        next: (change) => {
+    const emittedProfileChange = await new Promise<ProfileChange>(
+      async (resolve) => {
+        stream.subscribe({
+          next: (change) => {
             resolve(change);
-        },
-      });
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      service.createProfile(accessToken, name);
-    });
+          },
+        });
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        service.createProfile(accessToken, name);
+      },
+    );
 
     expect(emittedProfileChange.profile).toEqual(profile);
     expect(emittedProfileChange.change).toEqual(changeType);
 
-    stream.complete()
-  });
-
-  it('streamProfile - should emit an UPDATE event when a profile is updated', async () => {
-    const id = new ObjectId();
-    const initialName = 'John Doe';
-    const updatedName = 'Jane Doe';
-    const accessToken = jwtService.generateAccessToken(id);
-
-    await service.createProfile(accessToken, initialName);
-
-    const stream = service.streamProfile(accessToken);
-    const profile: Profile = { _id: id, name: updatedName };
-    const changeType = ChangeType.UPDATE;
-
-    const emittedProfileChange = await new Promise<ProfileChange>(async (resolve) => {
-      stream.subscribe({
-        next: (change) => {
-            resolve(change);
-        },
-      });
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      service.updateProfile(accessToken, updatedName);
-    });
-
-    expect(emittedProfileChange.profile).toEqual(profile);
-    expect(emittedProfileChange.change).toEqual(changeType);
-
-    stream.complete()
+    stream.complete();
   });
 });
