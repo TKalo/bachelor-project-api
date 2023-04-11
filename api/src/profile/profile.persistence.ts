@@ -44,27 +44,34 @@ export class ProfilePersistenceService implements OnModuleInit {
   streamProfile(userId: ObjectId): Subject<ProfileChange> {
     const stream = new Subject<ProfileChange>();
 
+    this.profileCollection;
     const dbStream = this.profileCollection.watch([], {
       fullDocument: 'updateLookup',
     });
 
     dbStream.on('change', (event: any) => {
-      let change: ProfileChange;
       switch (event.operationType) {
         case 'delete':
-          change = { change: ChangeType.DELETE, profile: event.fullDocument };
+          stream.next({
+            change: ChangeType.DELETE,
+            profile: event.fullDocument,
+          });
           break;
         case 'update':
-          change = { change: ChangeType.UPDATE, profile: event.fullDocument };
+          stream.next({
+            change: ChangeType.UPDATE,
+            profile: event.fullDocument,
+          });
           break;
         case 'insert':
-          change = { change: ChangeType.CREATE, profile: event.fullDocument };
+          stream.next({
+            change: ChangeType.CREATE,
+            profile: event.fullDocument,
+          });
           break;
         default:
           return;
       }
-
-      stream.next(change);
     });
 
     stream.subscribe({
