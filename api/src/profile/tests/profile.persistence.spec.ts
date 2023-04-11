@@ -82,11 +82,11 @@ describe('ProfilePersistenceService', () => {
 
     stream.subscribe((event) => emittedEvents.push(event));
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     await service.createProfile(userId, name);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(emittedEvents.length).toEqual(1);
     expect(emittedEvents[0].change).toEqual(0); // ChangeType.CREATE
@@ -107,11 +107,11 @@ describe('ProfilePersistenceService', () => {
     const stream = service.streamProfile(userId);
     stream.subscribe((event) => emittedEvents.push(event));
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     await service.updateProfile(userId, newName);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     stream.complete();
 

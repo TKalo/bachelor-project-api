@@ -96,7 +96,7 @@ describe('ProfileService', () => {
             resolve(change);
           },
         });
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         service.createProfile(accessToken, name);
       },
     );
