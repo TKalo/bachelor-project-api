@@ -11,7 +11,7 @@ import { MongoModule, MongoService } from './services/mongo.service';
 import { ProfileService } from '../profile/profile.service';
 import { ProfilePersistenceService } from '../profile/profile.persistence';
 import { JwtHandlerService } from './services/jwt.service';
-
+import { SeizurePersistenceService } from '../seizure/seizure.persistence';
 
 export interface TestContext {
   mongoClient: MongoClient;
@@ -51,10 +51,10 @@ export async function init(): Promise<TestContext> {
       AuthSessionPersistenceService,
       ProfileService,
       ProfilePersistenceService,
+      SeizurePersistenceService,
       JwtHandlerService,
       MongoService,
     ],
-
   });
 
   builder.overrideProvider(MongoService).useValue({
@@ -63,7 +63,6 @@ export async function init(): Promise<TestContext> {
     },
   });
 
-  
   builder.overrideProvider(ConfigService).useValue({
     getOrThrow: (key: string) => {
       switch (key) {
