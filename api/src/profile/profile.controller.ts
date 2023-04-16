@@ -19,7 +19,7 @@ import { ProfileInternalGrpcError } from './errors/profile-internal.grpc-error';
 import { HasNoProfileGuard } from './guards/has-no-profile.guard';
 import { HasProfileGuard } from './guards/has-profile.guard';
 import { ProfileService } from './profile.service';
-import { ProfileValidationService } from './validators/profile.validation';
+
 
 @UseGuards(ValidatedGuard)
 @Controller()
@@ -28,7 +28,6 @@ export class ProfileController implements ProfileServiceController {
   constructor(
     private readonly service: ProfileService,
     private readonly grpcService: GrpcService,
-    private readonly validation: ProfileValidationService,
   ) {}
 
   @UseGuards(HasNoProfileGuard)
@@ -38,11 +37,11 @@ export class ProfileController implements ProfileServiceController {
   ): Void | Promise<Void> | Observable<Void> {
     return new Promise<Void>(async (resolve, reject) => {
       try {
-        this.validation.nameValidation(request);
+        this.service.validation(request.name);
 
         const accessToken = this.grpcService.extractToken(metadata);
 
-        await this.service.createProfile(accessToken, request.name);
+        await this.service.create(accessToken, request.name);
 
         resolve({});
       } catch (e) {
@@ -62,11 +61,11 @@ export class ProfileController implements ProfileServiceController {
   ): Void | Promise<Void> | Observable<Void> {
     return new Promise<Void>(async (resolve, reject) => {
       try {
-        this.validation.nameValidation(request);
+        this.service.validation(request.name);
 
         const accessToken = this.grpcService.extractToken(metadata);
 
-        await this.service.updateProfile(accessToken, request.name);
+        await this.service.update(accessToken, request.name);
 
         resolve({});
       } catch (e) {
@@ -90,7 +89,7 @@ export class ProfileController implements ProfileServiceController {
       try {
         const accessToken = this.grpcService.extractToken(metadata);
 
-        const profile = await this.service.getProfile(accessToken);
+        const profile = await this.service.get(accessToken);
 
         resolve({
           name: profile.name,
@@ -106,11 +105,11 @@ export class ProfileController implements ProfileServiceController {
     try {
       const accessToken = this.grpcService.extractToken(metadata);
 
-      const stream = this.service.streamProfile(accessToken);
+      const stream = this.service.stream(accessToken);
 
       return stream.pipe<ProfileChange>(
         map((data) => ({
-          changeType: data.change,
+          change: data.change,
           profile: {
             name: data.profile.name,
           },

@@ -8,7 +8,6 @@ import { GrpcService } from '../common/services/grpc.service';
 import { ProfileService } from './profile.service';
 import { ProfilePersistenceService } from './profile.persistence';
 import { JwtHandlerService } from 'src/common/services/jwt.service';
-import { ProfileValidationService } from './validators/profile.validation';
 
 @Module({
   imports: [
@@ -31,7 +30,6 @@ import { ProfileValidationService } from './validators/profile.validation';
     GrpcService,
     ProfileService,
     ProfilePersistenceService,
-    ProfileValidationService,
     JwtHandlerService,
   ],
   controllers: [ProfileController],

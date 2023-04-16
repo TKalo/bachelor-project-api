@@ -18,7 +18,7 @@ export class ProfilePersistenceService implements OnModuleInit {
     await this.profileCollection.createIndex({ email: 1 }, { unique: true });
   }
 
-  async createProfile(userId: ObjectId, name: string): Promise<void> {
+  async create(userId: ObjectId, name: string): Promise<void> {
     const profile: Profile = {
       _id: userId,
       name: name,
@@ -27,11 +27,11 @@ export class ProfilePersistenceService implements OnModuleInit {
     await this.profileCollection.insertOne(profile);
   }
 
-  async updateProfile(userId: ObjectId, name: string): Promise<void> {
+  async update(userId: ObjectId, name: string): Promise<void> {
     await this.profileCollection.updateOne({ _id: userId }, { $set: { name } });
   }
 
-  async getProfile(userId: ObjectId): Promise<Profile> {
+  async get(userId: ObjectId): Promise<Profile> {
     try {
       return await this.profileCollection.findOne({
         _id: userId,
@@ -41,22 +41,18 @@ export class ProfilePersistenceService implements OnModuleInit {
     }
   }
 
-  streamProfile(userId: ObjectId): Subject<ProfileChange> {
+  stream(userId: ObjectId): Subject<ProfileChange> {
     const stream = new Subject<ProfileChange>();
 
     this.profileCollection;
-    const dbStream = this.profileCollection.watch([], {
+    const dbStream = this.profileCollection.watch([
+      {$match: {"fullDocument._id": userId}}
+    ], {
       fullDocument: 'updateLookup',
     });
 
     dbStream.on('change', (event: any) => {
       switch (event.operationType) {
-        case 'delete':
-          stream.next({
-            change: ChangeType.DELETE,
-            profile: event.fullDocument,
-          });
-          break;
         case 'update':
           stream.next({
             change: ChangeType.UPDATE,

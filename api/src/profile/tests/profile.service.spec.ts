@@ -36,7 +36,7 @@ describe('ProfileService', () => {
     const accessToken = jwtService.generateAccessToken(id);
 
     // Call the createProfile method
-    await service.createProfile(accessToken, name);
+    await service.create(accessToken, name);
 
     // Check that the profile was created in the database
     const foundProfile = await collection.findOne({ _id: id });
@@ -54,7 +54,7 @@ describe('ProfileService', () => {
     const accessToken = jwtService.generateAccessToken(id);
 
     // Call the updateProfile method
-    await service.updateProfile(accessToken, name);
+    await service.update(accessToken, name);
 
     // Check that the profile was updated in the database
     const foundProfile = await collection.findOne({ _id: id });
@@ -72,7 +72,7 @@ describe('ProfileService', () => {
     const accessToken = jwtService.generateAccessToken(id);
 
     // Call the getProfile method
-    const foundProfile = await service.getProfile(accessToken);
+    const foundProfile = await service.get(accessToken);
 
     // Check that the returned profile matches the expected values
     expect(foundProfile).toBeDefined();
@@ -85,7 +85,7 @@ describe('ProfileService', () => {
     const name = 'John Doe';
     const accessToken = jwtService.generateAccessToken(id);
 
-    const stream = service.streamProfile(accessToken);
+    const stream = service.stream(accessToken);
     const profile: Profile = { _id: id, name };
     const changeType = ChangeType.CREATE;
 
@@ -97,7 +97,7 @@ describe('ProfileService', () => {
           },
         });
         await new Promise((resolve) => setTimeout(resolve, 100));
-        service.createProfile(accessToken, name);
+        service.create(accessToken, name);
       },
     );
 
