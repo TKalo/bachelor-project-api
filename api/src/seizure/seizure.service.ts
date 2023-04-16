@@ -6,8 +6,9 @@ import { Subject } from 'rxjs';
 import { JwtHandlerService } from '../common/services/jwt.service';
 import { SeizureDataInsufficientError } from './errors/seizure-data-insufficient.error';
 import { SeizurePersistenceService } from './seizure.persistence';
-import { Seizure, SeizureType } from './types/Seizure.entity';
+import { Seizure, SeizureType } from './types/seizure.entity';
 import { SeizureChange } from './types/seizure-change.entity';
+import { SeizureDoesNotExistError } from './errors/seizure-does-not-exist.error';
 
 
 @Injectable()
@@ -39,9 +40,13 @@ export class SeizureService {
   async delete(accessToken: string, seizureId: string): Promise<void> {
     const userId = this.jwtService.decodeAccessToken(accessToken);
 
-    const seizureObjectId = new ObjectId(seizureId);
-
-    await this.persistence.delete(userId, seizureObjectId);
+    try{
+      const seizureObjectId = new ObjectId(seizureId);
+   
+      await this.persistence.delete(userId, seizureObjectId);
+    }catch(e){
+      throw new SeizureDoesNotExistError();
+    }
   }
 
   get(accessToken: string, durationFrom: number, durationTill: number): Promise<Seizure[]> {

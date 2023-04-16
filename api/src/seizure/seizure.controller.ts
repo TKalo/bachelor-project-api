@@ -1,12 +1,12 @@
 import { Controller, UseGuards } from '@nestjs/common';
 import {
-    Seizure,
-    SeizureChange,
-    SeizureFilter,
-    SeizureList,
-    SeizureServiceController,
-    SeizureServiceControllerMethods,
-    Void,
+  Seizure,
+  SeizureChange,
+  SeizureFilter,
+  SeizureList,
+  SeizureServiceController,
+  SeizureServiceControllerMethods,
+  Void,
 } from '../../generated_proto/hero';
 
 import { Metadata } from '@grpc/grpc-js';
@@ -18,6 +18,8 @@ import { SeizureDataInsufficientError } from './errors/seizure-data-insufficient
 import { SeizureDataInsufficientGrpcError } from './errors/seizure-data-insufficient.grpc-error';
 import { SeizureInternalGrpcError } from './errors/seizure-internal.grpc-error';
 import { SeizureService } from './seizure.service';
+import { SeizureDoesNotExistError } from './errors/seizure-does-not-exist.error';
+import { SeizureDoesNotExistGrpcError } from './errors/seizure-does-not-exist.grpc-error';
 
 @UseGuards(ValidatedGuard)
 @Controller()
@@ -69,6 +71,8 @@ export class SeizureController implements SeizureServiceController {
       } catch (e) {
         if (e.message === new SeizureDataInsufficientError().message) {
           reject(new SeizureDataInsufficientGrpcError());
+        } else if (e.message == new SeizureDoesNotExistError().message) {
+          reject(new SeizureDoesNotExistGrpcError());
         } else {
           reject(new SeizureInternalGrpcError());
         }
@@ -129,7 +133,7 @@ export class SeizureController implements SeizureServiceController {
             id: data.seizure._id.toHexString(),
             type: SeizureType[SeizureType[data.seizure.type]],
             durationSeconds: data.seizure.duration,
-          }
+          },
         })),
       );
     } catch (e) {

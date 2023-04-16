@@ -1,13 +1,13 @@
 import { RpcException } from "@nestjs/microservices";
 import { SeizureServiceError } from "generated_proto/hero";
 
-export class SeizureDataInsufficientGrpcError extends RpcException {
+export class SeizureDoesNotExistGrpcError extends RpcException {
     constructor() {
       super({
-        code: 6,
+        code: 5,
         message:
         SeizureServiceError[
-            SeizureServiceError.SEIZURE_NEGATIVE_DURATION
+            SeizureServiceError.SEIZURE_DOES_NOT_EXIST
           ],
       });
     }
