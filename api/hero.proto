@@ -60,9 +60,11 @@ enum ProfileServiceError{
     PROFILE_EXISTS = 3;
 }
 
-enum SeizureServiceErrors {
+enum SeizureServiceError {
     SEIZURE_INTERNAL = 0;
     SEIZURE_NEGATIVE_DURATION = 1;
+    SEIZURE_TYPE_INVALID = 2;
+    SEIZURE_DOES_NOT_EXIST = 3;
 }
 
 
