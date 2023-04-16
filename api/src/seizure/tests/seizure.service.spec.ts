@@ -4,7 +4,7 @@ import { TestContext, init } from '../../common/test-environment';
 import { JwtHandlerService } from '../../common/services/jwt.service';
 import { SeizureDataInsufficientError } from '../errors/seizure-data-insufficient.error';
 import { SeizureService } from '../seizure.service';
-import { Seizure, SeizureType } from '../types/Seizure.entity';
+import { Seizure, SeizureType } from '../types/seizure.entity';
 import { SeizureChange } from '../types/seizure-change.entity';
 
 describe('SeizureService', () => {

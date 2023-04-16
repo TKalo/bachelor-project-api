@@ -3,7 +3,7 @@ import { MongoService } from '../../common/services/mongo.service';
 import { TestContext, init } from '../../common/test-environment';
 
 import { SeizurePersistenceService } from '../seizure.persistence';
-import { Seizure, SeizureType } from '../types/Seizure.entity';
+import { Seizure, SeizureType } from '../types/seizure.entity';
 import { SeizureChange } from '../types/seizure-change.entity';
 
 describe('SeizurePersistenceService', () => {

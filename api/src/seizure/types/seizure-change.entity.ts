@@ -1,4 +1,4 @@
-import { Seizure } from "./Seizure.entity";
+import { Seizure } from "./seizure.entity";
 
 export enum ChangeType {
   CREATE,
