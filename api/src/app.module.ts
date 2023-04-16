@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { AuthSessionModule } from './auth-session/auth-session.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
+import { SeizureModule } from './seizure/seizure.module';
 
 export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
   transport: Transport.GRPC,
@@ -27,6 +28,7 @@ export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
     AuthSessionModule,
     AuthModule,
     ProfileModule,
+    SeizureModule,
     ConfigModule.forRoot(),
   ],
 })

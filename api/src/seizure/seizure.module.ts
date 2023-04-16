@@ -34,4 +34,4 @@ import { SeizureController } from './seizure.controller';
   ],
   controllers: [SeizureController],
 })
-export class ProfileModule {}
+export class SeizureModule {}
