@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ChangeStream, Collection, MongoClient, ReadPreference } from 'mongodb';
+import { ChangeStream, Collection, MongoClient } from 'mongodb';
 
 @Injectable()
 export class PersistenceService {

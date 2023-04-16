@@ -4,6 +4,7 @@ import { JwtHandlerService } from '../common/services/jwt.service';
 import { ProfilePersistenceService } from './profile.persistence';
 import { ProfileChange } from './types/profile-change.entity';
 import { Profile } from './types/profile.entity';
+import { ProfileDataInsufficientError } from './errors/profile-data-insufficient.error';
 
 @Injectable()
 export class ProfileService {
@@ -12,27 +13,33 @@ export class ProfileService {
     private readonly jwtService: JwtHandlerService,
   ) {}
 
-  async createProfile(accessToken: string, name: string): Promise<void> {
-    const userId = this.jwtService.decodeAccessToken(accessToken);
-
-    await this.persistence.createProfile(userId, name);
+  validation(name: String ) {
+    if (name.length < 3) {
+      throw new ProfileDataInsufficientError();
+    }
   }
 
-  async updateProfile(accessToken: string, name: string): Promise<void> {
+  async create(accessToken: string, name: string): Promise<void> {
     const userId = this.jwtService.decodeAccessToken(accessToken);
 
-    await this.persistence.updateProfile(userId, name);
+    await this.persistence.create(userId, name);
   }
 
-  getProfile(accessToken: string): Promise<Profile> {
+  async update(accessToken: string, name: string): Promise<void> {
     const userId = this.jwtService.decodeAccessToken(accessToken);
 
-    return this.persistence.getProfile(userId);
+    await this.persistence.update(userId, name);
   }
 
-  streamProfile(accessToken: string): Subject<ProfileChange> {
+  get(accessToken: string): Promise<Profile> {
     const userId = this.jwtService.decodeAccessToken(accessToken);
 
-    return this.persistence.streamProfile(userId);
+    return this.persistence.get(userId);
+  }
+
+  stream(accessToken: string): Subject<ProfileChange> {
+    const userId = this.jwtService.decodeAccessToken(accessToken);
+
+    return this.persistence.stream(userId);
   }
 }

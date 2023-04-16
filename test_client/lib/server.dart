@@ -93,7 +93,7 @@ void main() {
     test('SignUp - when valid info is given, should create user', () async {
       final input = Credentials(email: valid_email, password: valid_password);
       final response = await authClient.signUp(input);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(Duration(seconds: 1));
 
       expect(response.accessToken != "", true);
       expect(response.refreshToken != "", true);
@@ -283,11 +283,11 @@ void main() {
     });
 
     test(
-      'getProfile - when no profile exists, should throw ${ProfileServiceError.PROFILE_DOES_NOT_EXIST}',
+      'get - when no profile exists, should throw ${ProfileServiceError.PROFILE_DOES_NOT_EXIST}',
       () async {
         expect(
           () async {
-            return await client.getProfile(
+            return await client.get(
               Void(),
               options: CallOptions(metadata: metadataValid),
             );
@@ -304,9 +304,9 @@ void main() {
     );
 
     test(
-      'streamProfile - when no profile exists, should throw ${ProfileServiceError.PROFILE_DOES_NOT_EXIST}',
+      'stream - when no profile exists, should throw ${ProfileServiceError.PROFILE_DOES_NOT_EXIST}',
       () async {
-        final outputStream = await client.streamProfile(
+        final outputStream = await client.stream(
           Void(),
           options: CallOptions(metadata: metadataValid),
         );
@@ -325,13 +325,13 @@ void main() {
     );
 
     test(
-        'updateProfile - when no profile exists, should throw ${ProfileServiceError.PROFILE_DOES_NOT_EXIST}',
+        'update - when no profile exists, should throw ${ProfileServiceError.PROFILE_DOES_NOT_EXIST}',
         () async {
       final input = Profile(name: nameValid1);
 
       expect(
         () async {
-          return await client.updateProfile(
+          return await client.update(
             input,
             options: CallOptions(metadata: metadataValid),
           );
@@ -347,13 +347,13 @@ void main() {
     });
 
     test(
-        'createProfile - when invalid access token given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
+        'create - when invalid access token given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
         () async {
       final input = Profile(name: nameValid1);
 
       expect(
         () async {
-          return await client.createProfile(
+          return await client.create(
             input,
             options: CallOptions(metadata: metadataInvalid),
           );
@@ -369,13 +369,13 @@ void main() {
     });
 
     test(
-        'createProfile - when name shorter than 3 characters given, should tthrow ${ProfileServiceError.PROFILE_DATA_INSUFFICIENT}',
+        'create - when name shorter than 3 characters given, should throw ${ProfileServiceError.PROFILE_DATA_INSUFFICIENT}',
         () async {
       final input = Profile(name: nameInvalid);
 
       expect(
         () async {
-          return await client.createProfile(
+          return await client.create(
             input,
             options: CallOptions(metadata: metadataValid),
           );
@@ -391,18 +391,18 @@ void main() {
     });
 
     test(
-      'createProfile - when name longer than 2 characters given, should return created profile',
+      'create - when name longer than 2 characters given, should return created profile',
       () async {
         final input = Profile(name: nameValid1);
 
-        await client.createProfile(
+        await client.create(
           input,
           options: CallOptions(metadata: metadataValid),
         );
 
         await Future.delayed(Duration(seconds: 1));
 
-        final output = await client.getProfile(
+        final output = await client.get(
           Void(),
           options: CallOptions(metadata: metadataValid),
         );
@@ -412,13 +412,13 @@ void main() {
     );
 
     test(
-      'createProfile - when profile exists, should throw ${ProfileServiceError.PROFILE_EXISTS}',
+      'create - when profile exists, should throw ${ProfileServiceError.PROFILE_EXISTS}',
       () async {
         final input = Profile(name: nameValid1);
 
         expect(
           () async {
-            return await client.createProfile(
+            return await client.create(
               input,
               options: CallOptions(metadata: metadataValid),
             );
@@ -435,13 +435,13 @@ void main() {
     );
 
     test(
-        'updateProfile - when invalid access token given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
+        'update - when invalid access token given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
         () async {
       final input = Profile(name: nameValid1);
 
       expect(
         () async {
-          return await client.updateProfile(
+          return await client.update(
             input,
             options: CallOptions(metadata: metadataInvalid),
           );
@@ -457,13 +457,13 @@ void main() {
     });
 
     test(
-      'updateProfile - when name shorter than 3 characters given, should throw ${ProfileServiceError.PROFILE_DATA_INSUFFICIENT}',
+      'update - when name shorter than 3 characters given, should throw ${ProfileServiceError.PROFILE_DATA_INSUFFICIENT}',
       () async {
         final input = Profile(name: nameInvalid);
 
         expect(
           () async {
-            return await client.updateProfile(
+            return await client.update(
               input,
               options: CallOptions(metadata: metadataValid),
             );
@@ -480,18 +480,17 @@ void main() {
     );
 
     test(
-      'updateProfile - when name longer than 2 characters given, should return success',
+      'update - when name longer than 2 characters given, should return success',
       () async {
         final input = Profile(name: nameValid2);
 
-        await client.updateProfile(
+        await client.update(
           input,
           options: CallOptions(metadata: metadataValid),
         );
 
         await Future.delayed(Duration(seconds: 1));
-
-        final output = await client.getProfile(
+        final output = await client.get(
           Void(),
           options: CallOptions(metadata: metadataValid),
         );
@@ -501,9 +500,9 @@ void main() {
     );
 
     test(
-      'getProfile - when profile exists, should return profile',
+      'get - when profile exists, should return profile',
       () async {
-        final output = await client.getProfile(
+        final output = await client.get(
           Void(),
           options: CallOptions(metadata: metadataValid),
         );
@@ -513,16 +512,18 @@ void main() {
     );
 
     test(
-      'streamProfile - when profile exists, should stream changes to profile',
+      'stream - when profile exists, should stream changes to profile',
       () async {
-        final outputStream = await client.streamProfile(
+        final outputStream = await client.stream(
           Void(),
           options: CallOptions(metadata: metadataValid),
         );
 
         final input = Profile(name: nameValid1);
 
-        await client.updateProfile(
+        await Future.delayed(Duration(milliseconds: 500));
+
+        await client.update(
           input,
           options: CallOptions(metadata: metadataValid),
         );
@@ -531,9 +532,420 @@ void main() {
           outputStream,
           emitsInOrder([
             ProfileChange(
-              changeType: ChangeType.UPDATE,
+              change: ChangeType.UPDATE,
               profile: Profile(name: nameValid1),
             ),
+          ]),
+        );
+      },
+    );
+  });
+
+  group('Seizure', () {
+    late ClientChannel channel;
+    late SeizureServiceClient client;
+    late AuthServiceClient authClient;
+    late Map<String, String> metadataValid;
+    late Map<String, String> metadataInvalid = {
+      'Authentication': 'Bearer <invalid>'
+    };
+
+    setUpAll(() async {
+      channel = await Connection().connect();
+      client = SeizureServiceClient(channel);
+      authClient = AuthServiceClient(channel);
+
+      final input = Credentials(email: valid_email, password: valid_password);
+
+      final tokens = await authClient.signIn(input);
+
+      metadataValid = <String, String>{
+        'Authentication': 'Bearer ${tokens.accessToken}'
+      };
+    });
+
+    tearDownAll(() async {
+      await channel.shutdown();
+    });
+
+    test(
+      'create - when invalid AccessToken given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
+      () async {
+        final input = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: 0,
+        );
+
+        expect(
+          () async {
+            return await client.create(
+              input,
+              options: CallOptions(metadata: metadataInvalid),
+            );
+          },
+          throwsA(
+            TypeMatcher<GrpcError>().having(
+              (e) => e.message,
+              'message',
+              ValidationError.VALIDATION_INVALID_ACCESS_TOKEN.name,
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'create - when negative duration given, should throw ${SeizureServiceError.SEIZURE_NEGATIVE_DURATION}',
+      () async {
+        final input = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: -1,
+        );
+
+        expect(
+          () async {
+            return await client.create(
+              input,
+              options: CallOptions(metadata: metadataValid),
+            );
+          },
+          throwsA(
+            TypeMatcher<GrpcError>().having(
+              (e) => e.message,
+              'message',
+              SeizureServiceError.SEIZURE_NEGATIVE_DURATION.name,
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'create - when valid input given, should create seizure',
+      () async {
+        final uniqueDuration = 0;
+        final input = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: uniqueDuration,
+        );
+
+        await client.create(
+          input,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await Future.delayed(Duration(milliseconds: 2000));
+
+        final output = await client.get(
+          SeizureFilter(),
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        expect(output.seizures.any((s) => s.durationSeconds == uniqueDuration),
+            true);
+      },
+    );
+
+    test(
+      'delete - when invalid AccessToken given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
+      () async {
+        final input = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: 0,
+        );
+
+        expect(
+          () async {
+            return await client.delete(
+              input,
+              options: CallOptions(metadata: metadataInvalid),
+            );
+          },
+          throwsA(
+            TypeMatcher<GrpcError>().having(
+              (e) => e.message,
+              'message',
+              ValidationError.VALIDATION_INVALID_ACCESS_TOKEN.name,
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'delete - when invalid seizure id given, should throw ${SeizureServiceError.SEIZURE_DOES_NOT_EXIST}',
+      () async {
+        final input = Seizure(
+          id: "invalid seizure id",
+          type: SeizureType.Tonic,
+          durationSeconds: 0,
+        );
+        expect(
+          () async {
+            return await client.delete(
+              input,
+              options: CallOptions(metadata: metadataValid),
+            );
+          },
+          throwsA(
+            TypeMatcher<GrpcError>().having(
+              (e) => e.message,
+              'message',
+              SeizureServiceError.SEIZURE_DOES_NOT_EXIST.name,
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'delete - when valid input given, should delete seizure',
+      () async {
+        final uniqueDuration = 0;
+
+        final output1 = await client.get(
+          SeizureFilter(),
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        final Seizure? seizure1 = output1.seizures
+            .firstWhere((s) => s.durationSeconds == uniqueDuration);
+
+        expect(seizure1 == null, false);
+
+        await client.delete(
+          seizure1!,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await Future.delayed(Duration(milliseconds: 500));
+
+        final output2 = await client.get(
+          SeizureFilter(),
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        expect(
+            output2.seizures
+                .contains((s) => s.durationSeconds == uniqueDuration),
+            false);
+      },
+    );
+
+    test(
+      'get - when invalid AccessToken given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
+      () async {
+        final input = SeizureFilter();
+
+        expect(
+          () async {
+            return await client.get(
+              input,
+              options: CallOptions(metadata: metadataInvalid),
+            );
+          },
+          throwsA(
+            TypeMatcher<GrpcError>().having(
+              (e) => e.message,
+              'message',
+              ValidationError.VALIDATION_INVALID_ACCESS_TOKEN.name,
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'get - when filters given, should return seizures in filter',
+      () async {
+        final duration1 = 1;
+        final duration2 = 2;
+        final duration3 = 3;
+        final duration4 = 4;
+        final filter = SeizureFilter(
+          durationSecondsFrom: duration2,
+          durationSecondsTo: duration3,
+        );
+
+        final input1 = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: duration1,
+        );
+
+        final input2 = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: duration2,
+        );
+
+        final input3 = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: duration3,
+        );
+
+        final input4 = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: duration4,
+        );
+
+        await client.create(
+          input1,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await client.create(
+          input2,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await client.create(
+          input3,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await client.create(
+          input4,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await Future.delayed(Duration(milliseconds: 500));
+
+        final output = await client.get(
+          filter,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        expect(output.seizures.length, 2);
+
+        expect(output.seizures[0].durationSeconds, duration2);
+
+        expect(output.seizures[1].durationSeconds, duration3);
+      },
+    );
+
+    test(
+      'stream - when invalid AccessToken given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
+      () async {
+        final outputStream = await client.stream(
+          SeizureFilter(),
+          options: CallOptions(metadata: metadataInvalid),
+        );
+
+        await expectLater(
+          outputStream,
+          emitsError(
+            TypeMatcher<GrpcError>().having(
+              (e) => e.message,
+              'message',
+              ValidationError.VALIDATION_INVALID_ACCESS_TOKEN.name,
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'stream - when filter given, should should stream changes from seizures within filter',
+      () async {
+        final output1 = await client.get(
+          SeizureFilter(),
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        for (final seizure in output1.seizures) {
+          await client.delete(
+            seizure,
+            options: CallOptions(metadata: metadataValid),
+          );
+        }
+
+        await Future.delayed(Duration(milliseconds: 500));
+
+        final duration1 = 1;
+        final duration2 = 2;
+        final duration3 = 3;
+        final duration4 = 4;
+        final filter = SeizureFilter(
+          durationSecondsFrom: duration2,
+          durationSecondsTo: duration3,
+        );
+
+        final input1 = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: duration1,
+        );
+
+        final input2 = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: duration2,
+        );
+
+        final input3 = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: duration3,
+        );
+
+        final input4 = Seizure(
+          id: null,
+          type: SeizureType.Tonic,
+          durationSeconds: duration4,
+        );
+
+        final outputStream = await client.stream(
+          filter,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await Future.delayed(Duration(milliseconds: 500));
+
+        await client.create(
+          input1,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await client.create(
+          input2,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await client.create(
+          input3,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await client.create(
+          input4,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await Future.delayed(Duration(milliseconds: 500));
+
+        final output2 = await client.get(
+          filter,
+          options: CallOptions(metadata: metadataValid),
+        );
+
+        await expectLater(
+          outputStream,
+          emitsInOrder([
+            SeizureChange(
+              change: ChangeType.CREATE,
+              seizure: output2.seizures[0],
+            ),
+            SeizureChange(
+              change: ChangeType.CREATE,
+              seizure: output2.seizures[1],
+            )
           ]),
         );
       },

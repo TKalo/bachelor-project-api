@@ -73,5 +73,4 @@ describe('AuthPersistenceService', () => {
     // Assert
     expect(user).toBeNull();
   });
-
 });

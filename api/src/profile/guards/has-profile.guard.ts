@@ -26,7 +26,7 @@ export class HasProfileGuard implements CanActivate {
         const metadata = context.getArgByIndex(1); // metadata
         const accessToken = this.grpcService.extractToken(metadata);
         const userId = this.jwtService.decodeAccessToken(accessToken);
-        const profile = await this.persistence.getProfile(userId);
+        const profile = await this.persistence.get(userId);
 
         if (!profile) reject(new ProfileDoesNotExistGrpcError());
 

@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common/decorators/modules/module.decorator';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { ConfigService } from '@nestjs/config/dist/config.service';
 import { JwtModule } from '@nestjs/jwt';
-import { MongoModule } from '../common/services/mongo.service';
-import { ProfileController } from './profile.controller';
-import { GrpcService } from '../common/services/grpc.service';
-import { ProfileService } from './profile.service';
-import { ProfilePersistenceService } from './profile.persistence';
 import { JwtHandlerService } from 'src/common/services/jwt.service';
+import { GrpcService } from '../common/services/grpc.service';
+import { MongoModule } from '../common/services/mongo.service';
+import { SeizurePersistenceService } from './seizure.persistence';
+import { SeizureService } from './seizure.service';
+import { SeizureController } from './seizure.controller';
 
 @Module({
   imports: [
@@ -28,10 +28,10 @@ import { JwtHandlerService } from 'src/common/services/jwt.service';
   providers: [
     ConfigService,
     GrpcService,
-    ProfileService,
-    ProfilePersistenceService,
+    SeizureService,
+    SeizurePersistenceService,
     JwtHandlerService,
   ],
-  controllers: [ProfileController],
+  controllers: [SeizureController],
 })
-export class ProfileModule {}
+export class SeizureModule {}
