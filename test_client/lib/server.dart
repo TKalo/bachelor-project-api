@@ -640,7 +640,7 @@ void main() {
         await Future.delayed(Duration(milliseconds: 2000));
 
         final output = await client.get(
-          SeizureFilter(durationSecondsFrom: 0, durationSecondsTo: 0),
+          SeizureFilter(),
           options: CallOptions(metadata: metadataValid),
         );
 
@@ -708,7 +708,7 @@ void main() {
         final uniqueDuration = 0;
 
         final output1 = await client.get(
-          SeizureFilter(durationSecondsFrom: null, durationSecondsTo: null),
+          SeizureFilter(),
           options: CallOptions(metadata: metadataValid),
         );
 
@@ -725,7 +725,7 @@ void main() {
         await Future.delayed(Duration(milliseconds: 500));
 
         final output2 = await client.get(
-          SeizureFilter(durationSecondsFrom: 0, durationSecondsTo: 0),
+          SeizureFilter(),
           options: CallOptions(metadata: metadataValid),
         );
 
@@ -855,7 +855,7 @@ void main() {
       'stream - when filter given, should should stream changes from seizures within filter',
       () async {
         final output1 = await client.get(
-          SeizureFilter(durationSecondsFrom: 0, durationSecondsTo: 100),
+          SeizureFilter(),
           options: CallOptions(metadata: metadataValid),
         );
 
