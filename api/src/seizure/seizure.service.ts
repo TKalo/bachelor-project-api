@@ -1,10 +1,12 @@
 
 
 import { Injectable } from '@nestjs/common';
+import { ObjectId } from 'mongodb';
 import { Subject } from 'rxjs';
 import { JwtHandlerService } from '../common/services/jwt.service';
+import { SeizureDataInsufficientError } from './errors/seizure-data-insufficient.error';
 import { SeizurePersistenceService } from './seizure.persistence';
-import { Seizure } from './types/Seizure.entity';
+import { Seizure, SeizureType } from './types/Seizure.entity';
 import { SeizureChange } from './types/seizure-change.entity';
 
 
@@ -15,26 +17,42 @@ export class SeizureService {
     private readonly jwtService: JwtHandlerService,
   ) {}
 
-  async createProfile(accessToken: string, name: string): Promise<void> {
-    const userId = this.jwtService.decodeAccessToken(accessToken);
+  validation(duration: number, typeValue: number ) {
 
+    if(SeizureType[typeValue] == undefined){
+      throw new SeizureDataInsufficientError()
+    }
+
+    if (duration < 0) {
+      throw new SeizureDataInsufficientError();
+    }
   }
 
-  async updateProfile(accessToken: string, name: string): Promise<void> {
+  async create(accessToken: string, typeValue: number, durationSeconds: number): Promise<void> {
     const userId = this.jwtService.decodeAccessToken(accessToken);
 
+    const type: SeizureType = SeizureType[SeizureType[typeValue]];
 
+    await this.persistence.create(userId, type, durationSeconds)
   }
 
-  getProfile(accessToken: string): Promise<Seizure> {
+  async delete(accessToken: string, seizureId: string): Promise<void> {
     const userId = this.jwtService.decodeAccessToken(accessToken);
 
-    return null;
+    const seizureObjectId = new ObjectId(seizureId);
+
+    await this.persistence.delete(userId, seizureObjectId);
   }
 
-  streamProfile(accessToken: string): Subject<SeizureChange> {
+  get(accessToken: string, durationFrom: number, durationTill: number): Promise<Seizure[]> {
     const userId = this.jwtService.decodeAccessToken(accessToken);
 
-    return null;
+    return this.persistence.get(userId, durationFrom, durationTill);
+  }
+
+  stream(accessToken: string, durationFrom: number, durationTill: number): Subject<SeizureChange> {
+    const userId = this.jwtService.decodeAccessToken(accessToken);
+
+    return this.persistence.stream(userId, durationFrom, durationTill);
   }
 }
