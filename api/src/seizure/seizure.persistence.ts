@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Collection, ObjectId } from 'mongodb';
 import { MongoService } from '../common/services/mongo.service';
-import { Seizure, SeizureType } from './types/Seizure.entity';
+import { Seizure, SeizureType } from './types/seizure.entity';
 import { ChangeType, SeizureChange } from './types/seizure-change.entity';
 import { Subject } from 'rxjs/internal/Subject';
 
@@ -50,11 +50,11 @@ export class SeizurePersistenceService {
 
       query.userId = userId;
 
-      if (durationFrom !== null) {
+      if (durationFrom != undefined) {
         query.duration = { ...(query.duration || {}), $gte: durationFrom };
       }
 
-      if (durationTill !== null) {
+      if (durationTill != undefined) {
         query.duration = { ...(query.duration || {}), $lte: durationTill };
       }
 
@@ -75,7 +75,7 @@ export class SeizurePersistenceService {
       'fullDocument.userId': userId
     };
 
-    if (durationFrom !== null && durationTill == null) {
+    if (durationFrom != undefined && durationTill == undefined) {
       query = {
         ...query,
         'fullDocument.duration': {
@@ -84,7 +84,7 @@ export class SeizurePersistenceService {
       };
     }
 
-    if (durationTill !== null && durationFrom == null) {
+    if (durationTill != undefined && durationFrom == undefined) {
       query = {
         ...query,
         'fullDocument.duration': {
@@ -93,7 +93,7 @@ export class SeizurePersistenceService {
       };
     }
 
-    if (durationTill !== null && durationFrom !== null) {
+    if (durationTill != undefined && durationFrom !== undefined) {
       query = {
         ...query,
         'fullDocument.duration': {
