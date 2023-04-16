@@ -7,11 +7,12 @@ import { AuthSessionPersistenceService } from '../auth-session/auth-session.pers
 import { AuthSessionService } from '../auth-session/auth-session.service';
 import { AuthPersistenceService } from '../auth/auth.persistence';
 import { AuthService } from '../auth/auth.service';
-import { MongoModule, MongoService } from './services/mongo.service';
-import { ProfileService } from '../profile/profile.service';
 import { ProfilePersistenceService } from '../profile/profile.persistence';
-import { JwtHandlerService } from './services/jwt.service';
+import { ProfileService } from '../profile/profile.service';
 import { SeizurePersistenceService } from '../seizure/seizure.persistence';
+import { SeizureService } from '../seizure/seizure.service';
+import { JwtHandlerService } from './services/jwt.service';
+import { MongoModule, MongoService } from './services/mongo.service';
 
 export interface TestContext {
   mongoClient: MongoClient;
@@ -51,6 +52,7 @@ export async function init(): Promise<TestContext> {
       AuthSessionPersistenceService,
       ProfileService,
       ProfilePersistenceService,
+      SeizureService,
       SeizurePersistenceService,
       JwtHandlerService,
       MongoService,

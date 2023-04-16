@@ -23,6 +23,7 @@ describe('SeizurePersistenceService', () => {
   afterAll(async () => {
     await context.mongoClient.close();
     await context.mongoServer.stop();
+    await context.t.close();
   });
 
   afterEach(async () => {
@@ -63,7 +64,7 @@ describe('SeizurePersistenceService', () => {
       duration,
     });
 
-    await service.delete(createdSeizure.insertedId);
+    await service.delete(userId, createdSeizure.insertedId);
 
     const deletedSeizure = await collection.findOne({
       _id: createdSeizure.insertedId,
@@ -72,10 +73,8 @@ describe('SeizurePersistenceService', () => {
   });
 
   it('get - when no userId given, should return empty', async () => {
-    // Arrange
     const userId = new ObjectId();
 
-    // Insert test data
     await collection.insertOne({
       _id: null,
       userId,
@@ -83,18 +82,14 @@ describe('SeizurePersistenceService', () => {
       duration: 0,
     });
 
-    // Act
     const seizures = await service.get(null, null, null);
 
-    // Assert
     expect(seizures).toHaveLength(0);
   });
 
   it('get - when no duration is given, should return all user seizures', async () => {
-    // Arrange
     const userId = new ObjectId();
 
-    // Insert test data
     await collection.insertOne({
       _id: null,
       userId,
@@ -120,10 +115,8 @@ describe('SeizurePersistenceService', () => {
       duration: 15,
     });
 
-    // Act
     const seizures = await service.get(userId, null, null);
 
-    // Assert
     expect(seizures).toHaveLength(4);
     expect(seizures[0].type).toEqual(SeizureType.TONIC);
     expect(seizures[1].type).toEqual(SeizureType.TONIC);
@@ -132,11 +125,9 @@ describe('SeizurePersistenceService', () => {
   });
 
   it('get - when only durationFrom and userId is given, should return seizures after given durationFrom', async () => {
-    // Arrange
     const userId = new ObjectId();
     const durationFrom = 5;
 
-    // Insert test data
     await collection.insertOne({
       _id: null,
       userId,
@@ -162,10 +153,8 @@ describe('SeizurePersistenceService', () => {
       duration: 15,
     });
 
-    // Act
     const seizures = await service.get(userId, durationFrom, null);
 
-    // Assert
     expect(seizures).toHaveLength(3);
     expect(seizures[0].type).toEqual(SeizureType.TONIC);
     expect(seizures[1].type).toEqual(SeizureType.ATONIC);
@@ -173,7 +162,6 @@ describe('SeizurePersistenceService', () => {
   });
 
   it('get - when only durationTill and userId is given, should return seizures before given durationTill', async () => {
-    // Arrange
     const userId = new ObjectId();
     const durationTill = 10;
 
@@ -203,10 +191,8 @@ describe('SeizurePersistenceService', () => {
       duration: 15,
     });
 
-    // Act
     const seizures = await service.get(userId, null, durationTill);
 
-    // Assert
     expect(seizures).toHaveLength(3);
     expect(seizures[0].type).toEqual(SeizureType.TONIC);
     expect(seizures[1].type).toEqual(SeizureType.TONIC);
@@ -214,12 +200,10 @@ describe('SeizurePersistenceService', () => {
   });
 
   it('get - when all filters are given, should return seizures between durationFrom and durationTill', async () => {
-    // Arrange
     const userId = new ObjectId();
     const durationFrom = 5;
     const durationTill = 10;
 
-    // Insert test data
     await collection.insertOne({
       _id: null,
       userId,
@@ -245,29 +229,41 @@ describe('SeizurePersistenceService', () => {
       duration: 15,
     });
 
-    // Act
     const seizures = await service.get(userId, durationFrom, durationTill);
 
-    // Assert
     expect(seizures).toHaveLength(2);
     expect(seizures[0].type).toEqual(SeizureType.TONIC);
     expect(seizures[1].type).toEqual(SeizureType.ATONIC);
   });
 
+  it('get - When other users have seizures, should not return seizures', async () => {
+    const userId = new ObjectId();
+    const otherUserId = new ObjectId();
+
+    await collection.insertOne({
+      _id: null,
+      userId: otherUserId,
+      type: SeizureType.TONIC,
+      duration: 0,
+    });
+
+    const seizures = await service.get(userId, null, null);
+
+    expect(seizures).toHaveLength(0);
+  });
+
   it('stream - when no filter is given, should return  CREATE event for any new seizure', async () => {
-    // Arrange
     const userId = new ObjectId();
     const type = SeizureType.TONIC;
     const duration = 0;
 
-    const stream = await service.stream(userId, null, null);
+    const stream = service.stream(userId, null, null);
     const emittedEvents: SeizureChange[] = [];
 
     stream.subscribe((event) => emittedEvents.push(event));
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Insert test data
     await collection.insertOne({
       _id: null,
       userId,
@@ -287,20 +283,18 @@ describe('SeizurePersistenceService', () => {
   });
 
   it('stream - when filter is given, should only return CREATE event new seizures within filters', async () => {
-    // Arrange
     const userId = new ObjectId();
     const type = SeizureType.TONIC;
     const durationFrom = 5;
     const durationTill = 10;
 
-    const stream = await service.stream(userId, durationFrom, durationTill);
+    const stream = service.stream(userId, durationFrom, durationTill);
     const emittedEvents: SeizureChange[] = [];
 
     stream.subscribe((event) => emittedEvents.push(event));
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Insert test data
     await collection.insertOne({
       _id: null,
       userId,
@@ -340,13 +334,11 @@ describe('SeizurePersistenceService', () => {
     stream.complete();
   });
 
-  it('stream - when no filter is given, should return DELETE event for any deleted seizure', async () => {
-    // Arrange
-    const userId = new ObjectId();
+  it('stream - when no filter is given, should return DELETE event for any deleted seizure', async () => {    const userId = new ObjectId();
     const type = SeizureType.TONIC;
     const duration = 1;
 
-    const stream = await service.stream(userId, null, null);
+    const stream = service.stream(userId, null, null);
     const emittedEvents: SeizureChange[] = [];
 
     const result = await collection.insertOne({
@@ -362,13 +354,40 @@ describe('SeizurePersistenceService', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    await service.delete(result.insertedId)
+    await service.delete(userId, result.insertedId)
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(emittedEvents.length).toEqual(1);
     expect(emittedEvents[0].change).toEqual(2); // ChangeType.DELETE
     expect(emittedEvents[0].seizure._id).toEqual(result.insertedId);
+
+    stream.complete();
+  });
+
+  it('stream - When other user changes data, should not return event', async () => {
+    const userId = new ObjectId();
+    const otherUserId = new ObjectId();
+    const type = SeizureType.TONIC;
+    const duration = 1;
+
+    const stream = service.stream(userId, null, null);
+    const emittedEvents: SeizureChange[] = [];
+
+    stream.subscribe((event) => emittedEvents.push(event));
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const result = await collection.insertOne({
+      _id: null,
+      userId: otherUserId,
+      type: type,
+      duration: duration,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(emittedEvents.length).toEqual(0);
 
     stream.complete();
   });
