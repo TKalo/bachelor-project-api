@@ -32,12 +32,12 @@ export class SeizurePersistenceService {
     await this.seizureCollection.insertOne(seizure);
   }
 
-  async delete(seizureId: ObjectId): Promise<void> {
+  async delete(userId: ObjectId, seizureId: ObjectId): Promise<void> {
     await this.seizureCollection.updateOne(
-      { _id: seizureId },
+      { _id: seizureId, userId: userId },
       { $set: {deleted: true} },
     );
-    await this.seizureCollection.deleteOne({ _id: seizureId });
+    await this.seizureCollection.deleteOne({ _id: seizureId, userId: userId });
   }
 
   async get(
@@ -64,18 +64,15 @@ export class SeizurePersistenceService {
     }
   }
 
-  async stream(
+  stream(
     userId: ObjectId,
     durationFrom: number,
     durationTill: number,
-  ): Promise<Subject<SeizureChange>> {
+  ): Subject<SeizureChange> {
     const stream = new Subject<SeizureChange>();
 
     let query: any = {
-      $or: [
-        { 'fullDocument.userId': userId },
-        { 'fullDocumentBeforeChange.userId': userId },
-      ],
+      'fullDocument.userId': userId
     };
 
     if (durationFrom !== null && durationTill == null) {
@@ -108,29 +105,15 @@ export class SeizurePersistenceService {
 
     const dbStream = this.seizureCollection.watch([{ $match: query }], {
       fullDocument: 'updateLookup',
-      fullDocumentBeforeChange: 'whenAvailable',
     });
 
     dbStream.on('change', (event: any) => {
       switch (event.operationType) {
-        case 'delete':
+        case 'update':
           stream.next({
-            change: ChangeType.DELETE,
+            change: event.fullDocument.deleted ? ChangeType.DELETE : ChangeType.UPDATE,
             seizure: event.fullDocument,
           });
-          break;
-        case 'update':
-          if (event.fullDocument.deleted) {
-            stream.next({
-              change: ChangeType.DELETE,
-              seizure: event.fullDocument,
-            });
-          } else {
-            stream.next({
-              change: ChangeType.UPDATE,
-              seizure: event.fullDocument,
-            });
-          }
           break;
         case 'insert':
           stream.next({
@@ -139,10 +122,6 @@ export class SeizurePersistenceService {
           });
           break;
         default:
-          stream.next({
-            change: ChangeType.DELETE,
-            seizure: event.fullDocument,
-          });
           return;
       }
     });
