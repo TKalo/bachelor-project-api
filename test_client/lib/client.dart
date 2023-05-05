@@ -1,4 +1,4 @@
-import 'package:client/performance/streaming_test.dart';
+import 'performance/streaming_test.dart';
 
 void main() async {
   // runConnectionTest();

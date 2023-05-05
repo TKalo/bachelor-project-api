@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:client/connection.dart';
-import 'package:client/generated_proto/hero.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
+import '../connection.dart';
+import '../generated_proto/hero.pbgrpc.dart';
 import 'general_test.dart';
 
 class Output {
@@ -43,9 +43,15 @@ Future<Output> client() async {
     'Authentication': 'Bearer ${tokens.accessToken}'
   };
 
+  final requestStream = StreamController<SeizureFilter>();
+
+  Timer.periodic(Duration(seconds: 1), (timer) {
+    requestStream.add(SeizureFilter());
+  });
+
   final stream = seizureClient
       .stream(
-        SeizureFilter(),
+        requestStream.stream,
         options: CallOptions(metadata: metadata),
       )
       .asBroadcastStream();

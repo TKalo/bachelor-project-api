@@ -831,11 +831,16 @@ void integrationTests() {
       },
     );
 
+    final requestStream = () async* {
+      yield SeizureFilter();
+      await Future.delayed(Duration(seconds: 1));
+    };
+
     test(
       'stream - when invalid AccessToken given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
       () async {
         final outputStream = await client.stream(
-          SeizureFilter(),
+          requestStream(),
           options: CallOptions(metadata: metadataInvalid),
         );
 
@@ -902,8 +907,13 @@ void integrationTests() {
           durationSeconds: duration4,
         );
 
+        final requestStream = () async* {
+          yield filter;
+          await Future.delayed(Duration(seconds: 1));
+        };
+
         final outputStream = await client.stream(
-          filter,
+          requestStream(),
           options: CallOptions(metadata: metadataValid),
         );
 
