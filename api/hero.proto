@@ -32,7 +32,7 @@ service SeizureService {
     rpc create(Seizure) returns (Void);
     rpc delete(Seizure) returns (Void);
     rpc get(SeizureFilter) returns (SeizureList);
-    rpc stream(SeizureFilter) returns (stream SeizureChange);
+    rpc stream(stream SeizureFilter) returns (stream SeizureChange);
 }
 
 enum AuthSessionServiceError{
