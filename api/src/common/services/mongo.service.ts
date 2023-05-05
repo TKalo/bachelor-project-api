@@ -19,6 +19,10 @@ export class MongoService implements OnModuleDestroy {
     // Create a MongoDB client
     this.client = new MongoClient(url, {
       readConcernLevel: 'majority',
+      minPoolSize: 100,
+      maxPoolSize: 750,
+      maxStalenessSeconds: 3,
+      maxIdleTimeMS: 1000,
     });
 
     const dbName = this.config.getOrThrow('DATABASE_NAME');
