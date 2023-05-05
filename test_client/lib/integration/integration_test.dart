@@ -1,9 +1,10 @@
-import 'package:dart_test_client/connection.dart';
-import 'package:dart_test_client/generated_proto/hero.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 import 'package:test/test.dart';
 
-void main() {
+import '../connection.dart';
+import '../generated_proto/hero.pbgrpc.dart';
+
+void integrationTests() {
   final valid_email = "valid_email";
   final valid_password = "valid_password";
 
