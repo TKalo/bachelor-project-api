@@ -1,22 +1,17 @@
-
-FROM google/dart-runtime AS build
+FROM tkaldau/dart-protoc-client:latest
 
 WORKDIR /app
 
-RUN apt-get update
-
-RUN apt-get install -y protobuf-compiler
-
-RUN pub global activate protoc_plugin
+COPY pubspec.* /app/
 
 COPY hero.proto /app/
 
-COPY pubspec.* /app/
-
 COPY lib/ /app/bin/
-
-RUN protoc --dart_out=grpc:lib/generated_proto -I/app/ /app/hero.proto
 
 RUN dart pub get
 
-CMD ["dart", "test"]
+RUN dart pub global activate protoc_plugin
+
+RUN protoc -I=/app --plugin=protoc-gen-dart=$HOME/.pub-cache/bin/protoc-gen-dart --dart_out=grpc:bin/generated_proto hero.proto
+
+CMD ["dart", "run"]
