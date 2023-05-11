@@ -33,7 +33,7 @@ describe('ProfilePersistenceService', () => {
     await collection.deleteMany({});
   });
 
-  it('createProfile - when valid input is given, should add profile to database', async () => {
+  it('create - when valid input is given, should add profile to database', async () => {
     const userId = new ObjectId();
     const name = 'John Doe';
 
@@ -46,7 +46,7 @@ describe('ProfilePersistenceService', () => {
     expect(profile.name).toEqual(name);
   });
 
-  it('updateProfile - when valid input is given, should update profile in database', async () => {
+  it('update - when valid input is given, should update profile in database', async () => {
     const result = await collection.insertOne({ _id: null, name: 'John Doe' });
 
     const name = 'Jane Doe';
@@ -60,7 +60,7 @@ describe('ProfilePersistenceService', () => {
     expect(profile.name).toEqual(name);
   });
 
-  it('getProfile - when profile exist in database, should return profile', async () => {
+  it('get - when profile exist in database, should return profile', async () => {
     const name = 'John Doe';
     const result = await collection.insertOne({ _id: null, name: name });
 
@@ -76,11 +76,11 @@ describe('ProfilePersistenceService', () => {
 
   //TODO TEST STREAM OF OBJECTS YOU SHOULD NOT SEE
 
-  it('streamProfile - should emit a CREATE event when a new profile is created', async () => {
+  it('stream - should emit a CREATE event when a new profile is created', async () => {
     const userId = new ObjectId();
     const name = 'John Doe';
 
-    const stream = service.stream(userId);
+    const stream = service.globalStream();
     const emittedEvents: any[] = [];
 
     stream.subscribe((event) => emittedEvents.push(event));
@@ -99,7 +99,7 @@ describe('ProfilePersistenceService', () => {
     stream.complete();
   });
 
-  it('streamProfile - should emit an UPDATE event when a profile is updated', async () => {
+  it('stream - should emit an UPDATE event when a profile is updated', async () => {
     const userId = new ObjectId();
     const name = 'John Doe';
     const newName = 'Jane Doe';
@@ -107,7 +107,7 @@ describe('ProfilePersistenceService', () => {
     await service.create(userId, name);
 
     const emittedEvents: ProfileChange[] = [];
-    const stream = service.stream(userId);
+    const stream = service.globalStream();
     stream.subscribe((event) => emittedEvents.push(event));
 
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -124,39 +124,4 @@ describe('ProfilePersistenceService', () => {
     expect(emittedEvents[0].profile.name).toEqual(newName);
   });
 
-  it('stream - When other user changes data, should not return event', async () => {
-    // Arrange
-    const userId = new ObjectId();
-    const otherUserId = new ObjectId();
-    const name = 'John Doe';
-    const newName = 'Jane Doe';
-
-    await collection.insertOne({
-      _id: userId,
-      name: name,
-    });
-
-    await collection.insertOne({
-      _id: otherUserId,
-      name: name,
-    });
-
-    const stream = service.stream(userId);
-    const emittedEvents: ProfileChange[] = [];
-
-    stream.subscribe((event) => emittedEvents.push(event));
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    await collection.updateOne(
-      { userId: otherUserId },
-      { $set: { name: newName } },
-    );
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(emittedEvents.length).toEqual(0);
-
-    stream.complete();
-  });
 });
