@@ -2,14 +2,6 @@ syntax = "proto3";
 
 package hero;
 
-service HeroService {
-    rpc FindOne (HeroById) returns (Hero);
-    rpc PingStream (Void) returns (stream Ping);
-    rpc AddMessage (Message) returns (Void);
-    rpc MessageStream (Void) returns (stream Message);
-    rpc ReturnToken(Void) returns (Message);
-}
-
 service AuthService {
     rpc SignUp (Credentials) returns(AuthTokens);
     rpc SignIn (Credentials) returns(AuthTokens);
@@ -24,7 +16,7 @@ service ProfileService {
     rpc create(Profile) returns (Void);
     rpc update(Profile) returns (Void);
     rpc get(Void) returns (Profile);
-    rpc stream(Void) returns (stream ProfileChange);
+    rpc stream(stream Void) returns (stream ProfileChange);
 }
 
 
@@ -67,7 +59,6 @@ enum SeizureServiceError {
     SEIZURE_DOES_NOT_EXIST = 3;
 }
 
-
 enum ChangeType {
     CREATE = 0;
     UPDATE = 1;
@@ -87,24 +78,6 @@ message Credentials{
 message AuthTokens{
     string refreshToken = 1;
     string accessToken = 2;
-}
-
-message Ping {
-    int32 id = 1;
-}
-
-message HeroById {
-    int32 id = 1;
-}
-
-message Hero {
-    int32 id = 1;
-    string name = 2;
-}
-
-message Message {
-    int32 id = 1;
-    string message = 2;
 }
 
 message Profile {
