@@ -64,46 +64,10 @@ export class SeizurePersistenceService {
     }
   }
 
-  stream(
-    userId: ObjectId,
-    durationFrom: number,
-    durationTill: number,
-  ): Subject<SeizureChange> {
+  globalStream(){
     const stream = new Subject<SeizureChange>();
 
-    let query: any = {
-      'fullDocument.userId': userId,
-    };
-
-    if (durationFrom != undefined && durationTill == undefined) {
-      query = {
-        ...query,
-        'fullDocument.duration': {
-          $gte: durationFrom,
-        },
-      };
-    }
-
-    if (durationTill != undefined && durationFrom == undefined) {
-      query = {
-        ...query,
-        'fullDocument.duration': {
-          $lte: durationTill,
-        },
-      };
-    }
-
-    if (durationTill != undefined && durationFrom !== undefined) {
-      query = {
-        ...query,
-        'fullDocument.duration': {
-          $gte: durationFrom,
-          $lte: durationTill,
-        },
-      };
-    }
-
-    const dbStream = this.seizureCollection.watch([{ $match: query }], {
+    const dbStream = this.seizureCollection.watch([], {
       fullDocument: 'updateLookup',
     });
 
@@ -111,7 +75,7 @@ export class SeizurePersistenceService {
       switch (event.operationType) {
         case 'update':
           stream.next({
-            change: event.fullDocument.deleted
+            change: event.fullDocument == null ||  event.fullDocument.deleted
               ? ChangeType.DELETE
               : ChangeType.UPDATE,
             seizure: event.fullDocument,
@@ -129,12 +93,11 @@ export class SeizurePersistenceService {
     });
 
     stream.subscribe({
-      complete: () => {
-        console.log('DATABASE STREAM COMPLETE');
-        dbStream.close();
-      },
+      complete: () => dbStream.close(),
+      error: () => dbStream.close(),
     });
 
     return stream;
   }
+
 }

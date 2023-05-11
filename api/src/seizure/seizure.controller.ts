@@ -125,27 +125,16 @@ export class SeizureController implements SeizureServiceController {
 
       let filter: SeizureFilter;
 
-      let ping: number;
-
       let dataStream: Subject<any>;
 
       const cancelStreams = () => {
-        console.log('CANCELLED');
         returnStream.complete();
         dataStream.complete();
       };
 
-      setTimeout(() => {
-        if (ping < Date.now() - 5000) {
-          cancelStreams();
-        }
-      }, 5000);
-
       request.subscribe({
         next: (value) => {
-          ping = Date.now();
           if (filter == undefined) {
-            console.log('FIRST');
             filter = value;
 
             dataStream = this.service.stream(
