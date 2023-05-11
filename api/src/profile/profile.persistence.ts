@@ -41,13 +41,11 @@ export class ProfilePersistenceService implements OnModuleInit {
     }
   }
 
-  stream(userId: ObjectId): Subject<ProfileChange> {
+  globalStream(): Subject<ProfileChange> {
     const stream = new Subject<ProfileChange>();
 
     this.profileCollection;
-    const dbStream = this.profileCollection.watch([
-      {$match: {"fullDocument._id": userId}}
-    ], {
+    const dbStream = this.profileCollection.watch([], {
       fullDocument: 'updateLookup',
     });
 
@@ -71,9 +69,8 @@ export class ProfilePersistenceService implements OnModuleInit {
     });
 
     stream.subscribe({
-      complete: () => {
-        dbStream.close();
-      },
+      complete: () => dbStream.close(),
+      error: () => dbStream.close(),
     });
 
     return stream;
