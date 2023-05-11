@@ -17,19 +17,15 @@ describe('SeizureService', () => {
     context = await init();
     service = context.t.get<SeizureService>(SeizureService);
     jwtService = context.t.get<JwtHandlerService>(JwtHandlerService);
+
     const mongoService = context.t.get<MongoService>(MongoService);
     collection = mongoService.getCollection(Seizure.name);
   });
 
-  afterAll(async () => {
-    await context.mongoClient.close();
-    await context.mongoServer.stop();
-    await context.t.close();
-  });
+  
+  afterAll(async () => await context.mongoServer.stop());
 
-  afterEach(async () => {
-    await collection.deleteMany({});
-  });
+  afterEach(async () => await collection.deleteMany({}));
 
   it('validation - when given negative duration, should throw error', () => {
     const duration = -10;

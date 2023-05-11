@@ -20,15 +20,10 @@ describe('SeizurePersistenceService', () => {
     collection = mongoService.getCollection(Seizure.name);
   });
 
-  afterAll(async () => {
-    await context.mongoClient.close();
-    await context.mongoServer.stop();
-    await context.t.close();
-  });
+  
+  afterAll(async () => await context.mongoServer.stop());
 
-  afterEach(async () => {
-    await collection.deleteMany({});
-  });
+  afterEach(async () => await collection.deleteMany({}));
 
   it('create - when valid input is given, should create a new seizure', async () => {
     const userId = new ObjectId();

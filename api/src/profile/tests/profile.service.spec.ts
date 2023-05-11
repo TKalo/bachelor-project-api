@@ -20,14 +20,10 @@ describe('ProfileService', () => {
     collection = mongoService.getCollection(Profile.name);
   });
 
-  afterAll(async () => {
-    await context.mongoClient.close();
-    await context.mongoServer.stop();
-  });
+  
+  afterAll(async () => await context.mongoServer.stop());
 
-  afterEach(async () => {
-    await collection.deleteMany({});
-  });
+  afterEach(async () => await collection.deleteMany({}));
 
   it('create - when valid AccessToken given, should add profile to database', async () => {
     // Generate a fake access token and name
