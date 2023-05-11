@@ -15,14 +15,12 @@ class Output {
   Output({required this.best, required this.worst, required this.average});
 }
 
-final messages = 10;
-
-streamTest() async {
-  for (int x = 0; x < 10; x++) {
+streamTest({required iterations, required clients, required messages}) async {
+  for (int x = 0; x < iterations; x++) {
     final tester = GeneralTest<Output>(
-      clients: 300,
+      clients: clients,
       timeoutSeconds: 360,
-      client: client,
+      client: () => client(messages),
       printer: printer,
     );
 
@@ -30,7 +28,7 @@ streamTest() async {
   }
 }
 
-Future<Output> client() async {
+Future<Output> client(int messages) async {
   final id = getRandomString(3);
   ClientChannel channel = await Connection().connect();
   AuthServiceClient authClient = AuthServiceClient(channel);
