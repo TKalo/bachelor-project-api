@@ -1,7 +1,6 @@
-import 'package:client/connection.dart';
-
 import 'package:grpc/grpc.dart';
 
+import '../connection.dart';
 import 'general_test.dart';
 
 class Output {
