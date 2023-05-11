@@ -8,10 +8,11 @@ services:
     volumes:
       - ./proto:/app/proto
     networks:
-      - default
+      - default     
+    
 
   client:
-    build: ./test_client
+    build: ./test
     volumes:
     - ./proto:/app/proto
     depends_on:
