@@ -60,9 +60,7 @@ export async function init(): Promise<TestContext> {
   });
 
   builder.overrideProvider(MongoService).useValue({
-    getCollection: (collectionName: string) => {
-      return db.collection(collectionName);
-    },
+    getCollection: (collectionName: string) =>  db.collection(collectionName),
   });
 
   builder.overrideProvider(ConfigService).useValue({

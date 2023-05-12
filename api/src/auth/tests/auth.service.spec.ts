@@ -8,12 +8,13 @@ import { WrongPasswordError } from '../errors/wrong-password.error';
 import { AuthUser } from '../types/auth-user.entity';
 
 
-describe('AuthPersistenceService', () => {
+describe('AuthService', () => {
+  let context: TestContext;
   let authService: AuthService;
   let collection: Collection<AuthUser>;
 
   beforeAll(async () => {
-    const context: TestContext = await init();
+    context = await init();
     authService = context.t.get<AuthService>(
       AuthService,
     );
@@ -22,9 +23,9 @@ describe('AuthPersistenceService', () => {
   });
 
   
-  afterEach(async () => {
-    await collection.deleteMany({});
-  })
+  afterAll(async () => await context.mongoServer.stop());
+
+  afterEach(async () => await collection.deleteMany({}));
 
 
 

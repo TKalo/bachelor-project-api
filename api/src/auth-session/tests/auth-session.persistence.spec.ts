@@ -19,14 +19,9 @@ describe('AuthSessionPersistenceService', () => {
   });
 
 
-  afterAll(async () => {
-    await context.mongoClient.close();
-    await context.mongoServer.stop();
-  });
+  afterAll(async () => await context.mongoServer.stop());
 
-  afterEach(async () => {
-    await collection.deleteMany({});
-  });
+  afterEach(async () => await collection.deleteMany({}));
 
   it('createSession', async () => {
     let session = await persistence.getSessionFromToken(token);

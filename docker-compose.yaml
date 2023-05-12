@@ -8,11 +8,11 @@ services:
     volumes:
       - ./proto:/app/proto
     networks:
-      - default
+      - default     
+    
 
   client:
-    build: ./test_client
-    command: sh -c "sleep 7 && npm start"
+    build: ./test
     volumes:
     - ./proto:/app/proto
     depends_on:
@@ -22,7 +22,6 @@ services:
 
   mongo:
     image: mongo:4
-    # command: mongod --replSet rs0 --bind_ip_all --oplogSize 8
     environment:
       MONGO_INITDB_REPLICA_SET_NAME: rs0
       MONGO_INITDB_ENABLE_CLUSTER_AUTH: "false"

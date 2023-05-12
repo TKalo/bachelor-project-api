@@ -17,19 +17,15 @@ describe('SeizureService', () => {
     context = await init();
     service = context.t.get<SeizureService>(SeizureService);
     jwtService = context.t.get<JwtHandlerService>(JwtHandlerService);
+
     const mongoService = context.t.get<MongoService>(MongoService);
     collection = mongoService.getCollection(Seizure.name);
   });
 
-  afterAll(async () => {
-    await context.mongoClient.close();
-    await context.mongoServer.stop();
-    await context.t.close();
-  });
+  
+  afterAll(async () => await context.mongoServer.stop());
 
-  afterEach(async () => {
-    await collection.deleteMany({});
-  });
+  afterEach(async () => await collection.deleteMany({}));
 
   it('validation - when given negative duration, should throw error', () => {
     const duration = -10;
@@ -110,7 +106,6 @@ describe('SeizureService', () => {
 
     const stream = service.stream(accessToken, null, null);
     const emittedEvents: SeizureChange[] = [];
-
     stream.subscribe((event) => emittedEvents.push(event));
 
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -133,14 +128,50 @@ describe('SeizureService', () => {
     stream.complete();
   });
 
-  it('stream - when filter is given, should only return CREATE event new seizures within filters', async () => {
+  it('stream - when no filter is given, should return  DELETE event for any deleted seizure', async () => {
     const userId = new ObjectId();
+    const seizureId = new ObjectId();
     const accessToken = jwtService.generateAccessToken(userId);
     const type = SeizureType.TONIC;
+    const duration = 0;
+
+    await collection.insertOne({
+      _id: seizureId,
+      userId,
+      type: type,
+      duration: duration,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const stream = service.stream(accessToken, null, null);
     const emittedEvents: SeizureChange[] = [];
+    stream.subscribe((event) => emittedEvents.push(event));
 
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    await service.delete(accessToken, seizureId.toHexString())
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(emittedEvents.length).toEqual(1);
+    expect(emittedEvents[0].change).toEqual(2); // ChangeType.DELETE
+    expect(emittedEvents[0].seizure.userId).toEqual(userId);
+    expect(emittedEvents[0].seizure.type).toEqual(type);
+    expect(emittedEvents[0].seizure.duration).toEqual(duration);
+
+    stream.complete();
+  });
+
+  it('stream - when filter is given, should only return CREATE event for new seizures within filters', async () => {
+    const userId = new ObjectId();
+    const accessToken = jwtService.generateAccessToken(userId);
+    const type = SeizureType.TONIC;
+    const durationFrom = 5;
+    const durationTill = 10;
+
+    const stream = service.stream(accessToken, durationFrom, durationTill);
+    const emittedEvents: SeizureChange[] = [];
     stream.subscribe((event) => emittedEvents.push(event));
 
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -152,12 +183,127 @@ describe('SeizureService', () => {
       duration: 0,
     });
 
+    await collection.insertOne({
+      _id: null,
+      userId,
+      type: type,
+      duration: 5,
+    });
+
+    await collection.insertOne({
+      _id: null,
+      userId,
+      type: type,
+      duration: 10,
+    });
+
+    await collection.insertOne({
+      _id: null,
+      userId,
+      type: type,
+      duration: 15,
+    });
+
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    expect(emittedEvents.length).toEqual(1);
+    expect(emittedEvents.length).toEqual(2);
     expect(emittedEvents[0].change).toEqual(0); // ChangeType.CREATE
-    expect(emittedEvents[0].seizure.duration).toEqual(0);
+    expect(emittedEvents[0].seizure.duration).toEqual(5);
+    expect(emittedEvents[1].change).toEqual(0); // ChangeType.CREATE
+    expect(emittedEvents[1].seizure.duration).toEqual(10);
 
     stream.complete();
   });
+
+  it('stream - when filter is given, should only return DELETE event for new seizures within filters', async () => {
+    const userId = new ObjectId();
+    const seizureId1 = new ObjectId();
+    const seizureId2 = new ObjectId();
+    const seizureId3 = new ObjectId();
+    const seizureId4 = new ObjectId();
+    const accessToken = jwtService.generateAccessToken(userId);
+    const type = SeizureType.TONIC;
+    const durationFrom = 5;
+    const durationTill = 10;
+
+    await collection.insertOne({
+      _id: seizureId1,
+      userId,
+      type: type,
+      duration: 0,
+    });
+
+    await collection.insertOne({
+      _id: seizureId2,
+      userId,
+      type: type,
+      duration: 5,
+    });
+
+    await collection.insertOne({
+      _id: seizureId3,
+      userId,
+      type: type,
+      duration: 10,
+    });
+
+    await collection.insertOne({
+      _id: seizureId4,
+      userId,
+      type: type,
+      duration: 15,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const stream = service.stream(accessToken, durationFrom, durationTill);
+    const emittedEvents: SeizureChange[] = [];
+    stream.subscribe((event) => emittedEvents.push(event));
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    await service.delete(accessToken, seizureId1.toHexString())
+    await service.delete(accessToken, seizureId2.toHexString())
+    await service.delete(accessToken, seizureId3.toHexString())
+    await service.delete(accessToken, seizureId4.toHexString())
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(emittedEvents.length).toEqual(2);
+    expect(emittedEvents[0].change).toEqual(2); // ChangeType.DELETE
+    expect(emittedEvents[0].seizure.duration).toEqual(5);
+    expect(emittedEvents[1].change).toEqual(2); // ChangeType.DELETE
+    expect(emittedEvents[1].seizure.duration).toEqual(10);
+
+    stream.complete();
+  });
+
+  it('stream - When other user changes data, should not return event', async () => {
+    const userId = new ObjectId();
+    const otherUserId = new ObjectId();
+    const accessToken = jwtService.generateAccessToken(userId);
+    const type = SeizureType.TONIC;
+    const duration = 0;
+
+    const stream = service.stream(accessToken, null, null);
+    const emittedEvents: SeizureChange[] = [];
+    stream.subscribe((event) => emittedEvents.push(event));
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    await collection.insertOne({
+      _id: null,
+      userId: otherUserId,
+      type: type,
+      duration: duration,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(emittedEvents.length).toEqual(0);
+
+    stream.complete();
+  });
+
 });
+

@@ -10,7 +10,7 @@ import {
 } from '../../generated_proto/hero';
 
 import { Metadata } from '@grpc/grpc-js';
-import { Observable, map } from 'rxjs';
+import { Observable, Subject, map } from 'rxjs';
 import { ValidatedGuard } from 'src/common/guards/validated.guard';
 import { GrpcService } from 'src/common/services/grpc.service';
 import { SeizureType } from '../../generated_proto/hero';
@@ -113,29 +113,55 @@ export class SeizureController implements SeizureServiceController {
       }
     });
   }
+ 
   stream(
-    request: SeizureFilter,
+    request: Observable<SeizureFilter>,
     metadata?: Metadata,
   ): Observable<SeizureChange> {
     try {
       const accessToken = this.grpcService.extractToken(metadata);
 
-      const stream = this.service.stream(
-        accessToken,
-        request.durationSecondsFrom,
-        request.durationSecondsTo,
-      );
+      const returnStream = new Subject<SeizureChange>();
 
-      return stream.pipe<SeizureChange>(
-        map((data) => ({
-          change: data.change,
-          seizure: {
-            id: data.seizure._id.toHexString(),
-            type: SeizureType[SeizureType[data.seizure.type]],
-            durationSeconds: data.seizure.duration,
-          },
-        })),
-      );
+      let filter: SeizureFilter;
+
+      let dataStream: Subject<any>;
+
+      const cancelStreams = () => {
+        returnStream.complete();
+        dataStream.complete();
+      };
+
+      request.subscribe({
+        next: (value) => {
+          if (filter == undefined) {
+            filter = value;
+
+            dataStream = this.service.stream(
+              accessToken,
+              filter.durationSecondsFrom,
+              filter.durationSecondsTo,
+            );
+
+            dataStream.subscribe({
+              next: (data) => {
+                returnStream.next({
+                  change: data.change,
+                  seizure: {
+                    id: data.seizure._id.toHexString(),
+                    type: SeizureType[SeizureType[data.seizure.type]],
+                    durationSeconds: data.seizure.duration,
+                  },
+                });
+              },
+            });
+          }
+        },
+        complete: () => cancelStreams(),
+        error: () => cancelStreams(),
+      });
+
+      return returnStream;
     } catch (e) {
       throw new SeizureInternalGrpcError();
     }

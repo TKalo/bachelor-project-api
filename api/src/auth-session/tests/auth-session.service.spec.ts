@@ -21,14 +21,9 @@ describe('AuthSessionService', () => {
     collection = mongoService.getCollection(AuthSession.name)
   });
 
-  afterAll(async () => {
-    await context.mongoClient.close();
-    await context.mongoServer.stop();
-  });
+  afterAll(async () => await context.mongoServer.stop());
 
-  afterEach(async () => {
-    await collection.deleteMany({});
-  });
+  afterEach(async () => await collection.deleteMany({}));
 
   it('createSession - when userid not associated with existing auth session is given, expect session to be created', async () => {
     const userId = new ObjectId();

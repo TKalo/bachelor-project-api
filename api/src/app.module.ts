@@ -6,7 +6,7 @@ import {
   addReflectionToGrpcConfig,
 } from 'nestjs-grpc-reflection';
 import { join } from 'path';
-import { AppController } from './app.controller';
+
 import { AuthSessionModule } from './auth-session/auth-session.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
@@ -18,11 +18,19 @@ export const grpcClientOptions: GrpcOptions = addReflectionToGrpcConfig({
     url: '0.0.0.0:50051',
     package: 'hero',
     protoPath: join(__dirname, '../../hero.proto'),
+    keepalive: {
+      http2MaxPingStrikes: 1,
+      http2MaxPingsWithoutData: 0,
+      http2MinPingIntervalWithoutDataMs: 1000,
+      http2MinTimeBetweenPingsMs: 100,
+      keepalivePermitWithoutCalls: 1,
+      keepaliveTimeMs: 10000,
+      keepaliveTimeoutMs: 1000
+    }
   },
 });
 
 @Module({
-  controllers: [AppController],
   imports: [
     GrpcReflectionModule.register(grpcClientOptions),
     AuthSessionModule,

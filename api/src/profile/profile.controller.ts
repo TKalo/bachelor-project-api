@@ -8,7 +8,7 @@ import {
 } from '../../generated_proto/hero';
 
 import { Metadata } from '@grpc/grpc-js';
-import { Observable, map } from 'rxjs';
+import { Observable, Subject, map } from 'rxjs';
 import { ValidatedGuard } from 'src/common/guards/validated.guard';
 import { GrpcService } from 'src/common/services/grpc.service';
 import { ProfileDataInsufficientError } from './errors/profile-data-insufficient.error';
@@ -19,7 +19,6 @@ import { ProfileInternalGrpcError } from './errors/profile-internal.grpc-error';
 import { HasNoProfileGuard } from './guards/has-no-profile.guard';
 import { HasProfileGuard } from './guards/has-profile.guard';
 import { ProfileService } from './profile.service';
-
 
 @UseGuards(ValidatedGuard)
 @Controller()
@@ -101,11 +100,19 @@ export class ProfileController implements ProfileServiceController {
   }
 
   @UseGuards(HasProfileGuard)
-  stream(request: Void, metadata?: Metadata): Observable<ProfileChange> {
+  stream(
+    request: Observable<Void>,
+    metadata?: Metadata,
+  ): Observable<ProfileChange> {
     try {
       const accessToken = this.grpcService.extractToken(metadata);
 
       const stream = this.service.stream(accessToken);
+
+      request.subscribe({
+        complete: () => stream.complete(),
+        error: () => stream.complete(),
+      })
 
       return stream.pipe<ProfileChange>(
         map((data) => ({

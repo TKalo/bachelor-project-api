@@ -1,79 +1,14 @@
-import 'package:dart_test_client/connection.dart';
-import 'package:dart_test_client/generated_proto/hero.pbgrpc.dart';
+import 'dart:async';
+
 import 'package:grpc/grpc.dart';
 import 'package:test/test.dart';
 
-void main() {
+import '../connection.dart';
+import '../generated_proto/hero.pbgrpc.dart';
+
+void integrationTests() {
   final valid_email = "valid_email";
   final valid_password = "valid_password";
-
-  group('HeroService', () {
-    late ClientChannel channel;
-    late HeroServiceClient client;
-
-    setUpAll(() async {
-      channel = await Connection().connect();
-      client = HeroServiceClient(channel);
-    });
-
-    tearDownAll(() async {
-      await channel.shutdown();
-    });
-
-    test('ReturnToken', () async {
-      final metadata = <String, String>{'Authentication': 'Bearer <token>'};
-
-      final request = Void();
-
-      final response = await client.returnToken(
-        request,
-        options: CallOptions(metadata: metadata),
-      );
-
-      expect(response.message, '<token>');
-    });
-
-    test('FindOne', () async {
-      final request = HeroById()..id = 1;
-      final response = await client.findOne(request);
-
-      expect(response.id, equals(1));
-      expect(response.name, equals('Jahn'));
-    });
-
-    test('PingStream', () async {
-      final responseStream = client.pingStream(Void());
-
-      await expectLater(
-        responseStream,
-        emitsInOrder([
-          Ping()..id = 1,
-          Ping()..id = 2,
-          Ping()..id = 3,
-          Ping()..id = 4,
-          Ping()..id = 5
-        ]),
-      );
-    });
-
-    test('MessageStream', () async {
-      final responseStream = client.messageStream(Void());
-
-      final String message = 'insert';
-      client.addMessage(Message(id: 1, message: message));
-      client.addMessage(Message(id: 1, message: message));
-      client.addMessage(Message(id: 1, message: message));
-
-      await expectLater(
-        responseStream,
-        emitsInOrder([
-          Message(id: 0, message: message),
-          Message(id: 1, message: message),
-          Message(id: 2, message: message),
-        ]),
-      );
-    });
-  });
 
   group('Auth', () {
     late ClientChannel channel;
@@ -306,8 +241,10 @@ void main() {
     test(
       'stream - when no profile exists, should throw ${ProfileServiceError.PROFILE_DOES_NOT_EXIST}',
       () async {
+        final streamController = new StreamController<Void>();
+
         final outputStream = await client.stream(
-          Void(),
+          streamController.stream,
           options: CallOptions(metadata: metadataValid),
         );
 
@@ -321,6 +258,8 @@ void main() {
             ),
           ),
         );
+
+        streamController.close();
       },
     );
 
@@ -514,8 +453,10 @@ void main() {
     test(
       'stream - when profile exists, should stream changes to profile',
       () async {
+        final streamController = new StreamController<Void>();
+
         final outputStream = await client.stream(
-          Void(),
+          streamController.stream,
           options: CallOptions(metadata: metadataValid),
         );
 
@@ -537,6 +478,8 @@ void main() {
             ),
           ]),
         );
+
+        streamController.close();
       },
     );
   });
@@ -833,8 +776,10 @@ void main() {
     test(
       'stream - when invalid AccessToken given, should throw ${ValidationError.VALIDATION_INVALID_ACCESS_TOKEN}',
       () async {
+        final streamController = new StreamController<SeizureFilter>();
+
         final outputStream = await client.stream(
-          SeizureFilter(),
+          streamController.stream,
           options: CallOptions(metadata: metadataInvalid),
         );
 
@@ -848,6 +793,8 @@ void main() {
             ),
           ),
         );
+
+        streamController.close();
       },
     );
 
@@ -901,10 +848,14 @@ void main() {
           durationSeconds: duration4,
         );
 
+        final streamController = StreamController<SeizureFilter>();
+
         final outputStream = await client.stream(
-          filter,
+          streamController.stream,
           options: CallOptions(metadata: metadataValid),
         );
+
+        streamController.add(filter);
 
         await Future.delayed(Duration(milliseconds: 500));
 
@@ -948,6 +899,8 @@ void main() {
             )
           ]),
         );
+
+        streamController.close();
       },
     );
   });

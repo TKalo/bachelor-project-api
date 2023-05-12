@@ -35,7 +35,7 @@ export class SeizurePersistenceService {
   async delete(userId: ObjectId, seizureId: ObjectId): Promise<void> {
     await this.seizureCollection.updateOne(
       { _id: seizureId, userId: userId },
-      { $set: {deleted: true} },
+      { $set: { deleted: true } },
     );
     await this.seizureCollection.deleteOne({ _id: seizureId, userId: userId });
   }
@@ -64,46 +64,10 @@ export class SeizurePersistenceService {
     }
   }
 
-  stream(
-    userId: ObjectId,
-    durationFrom: number,
-    durationTill: number,
-  ): Subject<SeizureChange> {
+  globalStream(){
     const stream = new Subject<SeizureChange>();
 
-    let query: any = {
-      'fullDocument.userId': userId
-    };
-
-    if (durationFrom != undefined && durationTill == undefined) {
-      query = {
-        ...query,
-        'fullDocument.duration': {
-          $gte: durationFrom,
-        },
-      };
-    }
-
-    if (durationTill != undefined && durationFrom == undefined) {
-      query = {
-        ...query,
-        'fullDocument.duration': {
-          $lte: durationTill,
-        },
-      };
-    }
-
-    if (durationTill != undefined && durationFrom !== undefined) {
-      query = {
-        ...query,
-        'fullDocument.duration': {
-          $gte: durationFrom,
-          $lte: durationTill,
-        },
-      };
-    }
-
-    const dbStream = this.seizureCollection.watch([{ $match: query }], {
+    const dbStream = this.seizureCollection.watch([], {
       fullDocument: 'updateLookup',
     });
 
@@ -111,7 +75,9 @@ export class SeizurePersistenceService {
       switch (event.operationType) {
         case 'update':
           stream.next({
-            change: event.fullDocument.deleted ? ChangeType.DELETE : ChangeType.UPDATE,
+            change: event.fullDocument == null ||  event.fullDocument.deleted
+              ? ChangeType.DELETE
+              : ChangeType.UPDATE,
             seizure: event.fullDocument,
           });
           break;
@@ -127,11 +93,11 @@ export class SeizurePersistenceService {
     });
 
     stream.subscribe({
-      complete: () => {
-        dbStream.close();
-      },
+      complete: () => dbStream.close(),
+      error: () => dbStream.close(),
     });
 
     return stream;
   }
+
 }
